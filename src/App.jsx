@@ -469,7 +469,7 @@ export default function App() {
         body { background: #f7f5f2; }
         .app { min-height: 100vh; background: #f7f5f2; color: #1c1917; font-family: 'Inter', sans-serif; padding-bottom: 80px; }
 
-        .header { padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .header { padding: 14px 20px; background: #f7f5f2; border-bottom: none; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; }
         .header-centered { justify-content: center; }
         .header-centered .logo { position: absolute; left: 50%; transform: none; }
         .logo { width: 38px; height: 38px; background: linear-gradient(135deg, #e85d2e, #f5974a); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,93,46,0.3); }

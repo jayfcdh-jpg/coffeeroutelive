@@ -1,4 +1,4 @@
-const CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID
+const CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID || '254453'
 const CLIENT_SECRET = import.meta.env.VITE_STRAVA_CLIENT_SECRET
 const REDIRECT_URI = window.location.origin + window.location.pathname.replace(/\/$/, '')
 

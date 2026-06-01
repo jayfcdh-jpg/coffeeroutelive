@@ -490,11 +490,19 @@ export default function App() {
         .speed-input:focus { outline: none; border-color: #e85d2e; }
         .speed-unit { font-size: 0.82rem; color: #78716c; font-weight: 600; }
 
-        .upload-screen { min-height: calc(100vh - 75px); display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .upload-card { width: 100%; max-width: 520px; }
-        .upload-heading { text-align: center; margin-bottom: 28px; }
-        .upload-heading h2 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.04em; color: #1c1917; margin-bottom: 8px; }
-        .upload-heading p { font-size: 0.88rem; color: #a8a099; font-weight: 500; line-height: 1.6; }
+        .upload-screen { min-height: calc(100vh - 75px); display: flex; align-items: center; justify-content: center; padding: 24px; background: #f7f5f2; position: relative; overflow: hidden; }
+        .upload-screen::before { content: ''; position: absolute; top: -120px; right: -120px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,93,46,0.08) 0%, transparent 70%); pointer-events: none; }
+        .upload-screen::after { content: ''; position: absolute; bottom: -80px; left: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(245,151,74,0.07) 0%, transparent 70%); pointer-events: none; }
+        .upload-card { width: 100%; max-width: 480px; position: relative; z-index: 1; }
+        .upload-heading { text-align: center; margin-bottom: 32px; }
+        .upload-heading .hero-icon { font-size: 3rem; margin-bottom: 12px; display: block; filter: drop-shadow(0 4px 12px rgba(232,93,46,0.3)); }
+        .upload-heading h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.05em; color: #1c1917; margin-bottom: 10px; line-height: 1.1; }
+        .upload-heading h2 span { color: #e85d2e; }
+        .upload-heading p { font-size: 0.9rem; color: #a8a099; font-weight: 500; line-height: 1.7; }
+        .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 28px; }
+        .feature { background: #fff; border: 1px solid #ede9e4; border-radius: 14px; padding: 14px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+        .feature-icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
+        .feature-label { font-size: 0.7rem; font-weight: 700; color: #78716c; line-height: 1.4; }
 
         .dropzone { border: 2px dashed #d6d0c9; border-radius: 20px; padding: 44px 28px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fff; position: relative; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
         .dropzone::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% -10%, rgba(232,93,46,0.05) 0%, transparent 60%); pointer-events: none; }
@@ -516,6 +524,7 @@ export default function App() {
 
         .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: #c4bdb5; font-size: 0.74rem; font-weight: 600; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #ede9e4; }
+        .upload-box { background: #fff; border: 1px solid #ede9e4; border-radius: 20px; padding: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
         .upload-tabs { display: flex; gap: 0; background: #f7f5f2; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
         .upload-tab { flex: 1; padding: 9px; border: none; background: transparent; border-radius: 9px; font-size: 0.82rem; font-weight: 600; color: #a8a099; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .upload-tab.active { background: #fff; color: #1c1917; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
@@ -673,9 +682,26 @@ export default function App() {
           <div className="upload-screen">
             <div className="upload-card">
               <div className="upload-heading">
-                <h2>Waar stop jij voor koffie?</h2>
-                <p>Upload je fietsroute en ontdek koffiestops langs de weg</p>
+                <span className="hero-icon">☕</span>
+                <h2>Vind koffiestops langs <span>jouw route</span></h2>
+                <p>Laad je fietsroute in en ontdek de beste cafés en bakkerijen onderweg</p>
               </div>
+
+              <div className="features">
+                <div className="feature">
+                  <span className="feature-icon">🗺️</span>
+                  <div className="feature-label">Importeer via Strava of bestand</div>
+                </div>
+                <div className="feature">
+                  <span className="feature-icon">☕</span>
+                  <div className="feature-label">Koffiebars & bakkerijen langs de weg</div>
+                </div>
+                <div className="feature">
+                  <span className="feature-icon">⏱️</span>
+                  <div className="feature-label">Plan stops op tijd & afstand</div>
+                </div>
+              </div>
+              <div className="upload-box">
               <div className="upload-tabs">
                 <button className={`upload-tab${uploadTab === 'strava' ? ' active' : ''}`} onClick={() => setUploadTab('strava')}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill={uploadTab === 'strava' ? '#fc4c02' : '#a8a099'}><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
@@ -771,6 +797,7 @@ export default function App() {
               )}
 
               {status === "error" && <div className="error-box">⚠️ {errorMsg}</div>}
+              </div>
             </div>
           </div>
         )}

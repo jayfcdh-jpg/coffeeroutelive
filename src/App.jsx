@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "./supabase.js";
-import { stravaAuthUrl, exchangeCode, fetchActivityStream, getStoredToken, storeToken, clearToken, extractActivityId } from "./strava.js";
+import { stravaAuthUrl, exchangeCode, fetchActivityStream, fetchActivities, getStoredToken, storeToken, clearToken } from "./strava.js";
 
 // ─── GPX parser ───────────────────────────────────────────────────────────────
 function parseGPX(gpxText) {
@@ -319,8 +319,10 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [stravaToken, setStravaToken] = useState(() => getStoredToken());
-  const [stravaInput, setStravaInput] = useState('');
+  const [stravaActivities, setStravaActivities] = useState([]);
+  const [stravaSearch, setStravaSearch] = useState('');
   const [stravaLoading, setStravaLoading] = useState(false);
+  const [stravaLoadingList, setStravaLoadingList] = useState(false);
   const [stravaError, setStravaError] = useState('');
   const pickedRef = useRef([]);
   const fileRef = useRef();
@@ -334,20 +336,37 @@ export default function App() {
       exchangeCode(code).then(data => {
         storeToken(data)
         setStravaToken(data)
+        loadStravaActivities(data.access_token)
       }).catch(() => setStravaError('Strava login mislukt, probeer opnieuw'))
     }
   }, [])
 
-  const handleStravaLoad = async () => {
-    const id = extractActivityId(stravaInput)
-    if (!id) { setStravaError('Voer een geldige Strava activiteit URL of ID in'); return }
-    setStravaLoading(true); setStravaError('')
+  // Activiteiten laden als token al beschikbaar is
+  useEffect(() => {
+    if (stravaToken && stravaActivities.length === 0) {
+      loadStravaActivities(stravaToken.access_token)
+    }
+  }, [stravaToken])
+
+  const loadStravaActivities = async (token) => {
+    setStravaLoadingList(true)
     try {
-      const points = await fetchActivityStream(id, stravaToken.access_token)
-      handleFilePoints(points)
+      const data = await fetchActivities(token)
+      setStravaActivities(data.filter(a => a.type === 'Ride' || a.type === 'VirtualRide' || a.sport_type?.includes('Ride')))
     } catch (e) {
       setStravaError(e.message)
     } finally {
+      setStravaLoadingList(false)
+    }
+  }
+
+  const handleStravaLoad = async (activityId) => {
+    setStravaLoading(activityId); setStravaError('')
+    try {
+      const points = await fetchActivityStream(activityId, stravaToken.access_token)
+      handleFilePoints(points)
+    } catch (e) {
+      setStravaError(e.message)
       setStravaLoading(false)
     }
   }
@@ -679,27 +698,49 @@ export default function App() {
               {!stravaToken ? (
                 <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-                  Verbind met Strava
+                  Importeer via Strava
                 </button>
               ) : (
                 <div className="strava-connected">
                   <div className="strava-connected-top">
                     <div className="strava-avatar">S</div>
-                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Verbonden met Strava</span>
-                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); }}>Uitloggen</span>
+                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Strava activiteiten</span>
+                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); setStravaActivities([]); }}>Uitloggen</span>
                   </div>
-                  <div className="strava-input-row">
-                    <input
-                      className="strava-input"
-                      placeholder="Plak een Strava activiteit URL of ID"
-                      value={stravaInput}
-                      onChange={e => setStravaInput(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleStravaLoad()}
-                    />
-                    <button className="strava-load-btn" disabled={stravaLoading || !stravaInput} onClick={handleStravaLoad}>
-                      {stravaLoading ? '...' : 'Laden'}
-                    </button>
-                  </div>
+                  <input
+                    className="strava-input"
+                    placeholder="Zoek op naam..."
+                    value={stravaSearch}
+                    onChange={e => setStravaSearch(e.target.value)}
+                    style={{width:'100%',marginBottom:'8px'}}
+                  />
+                  {stravaLoadingList ? (
+                    <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Activiteiten laden...</div>
+                  ) : (
+                    <div style={{maxHeight:'220px',overflowY:'auto',display:'flex',flexDirection:'column',gap:'4px'}}>
+                      {stravaActivities
+                        .filter(a => a.name.toLowerCase().includes(stravaSearch.toLowerCase()))
+                        .map(a => (
+                          <button key={a.id} disabled={stravaLoading === a.id}
+                            onClick={() => handleStravaLoad(a.id)}
+                            style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',border:'1px solid #ede9e4',borderRadius:'8px',background:'#fff',cursor:'pointer',textAlign:'left',transition:'all 0.15s'}}
+                            onMouseEnter={e => e.currentTarget.style.borderColor='#fc4c02'}
+                            onMouseLeave={e => e.currentTarget.style.borderColor='#ede9e4'}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.name}</div>
+                              <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{new Date(a.start_date_local).toLocaleDateString('nl-NL')} · {(a.distance/1000).toFixed(1)} km</div>
+                            </div>
+                            {stravaLoading === a.id
+                              ? <span style={{fontSize:'0.7rem',color:'#fc4c02'}}>laden...</span>
+                              : <span style={{fontSize:'0.7rem',color:'#c4bdb5'}}>→</span>}
+                          </button>
+                        ))}
+                      {stravaActivities.filter(a => a.name.toLowerCase().includes(stravaSearch.toLowerCase())).length === 0 && (
+                        <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Geen activiteiten gevonden</div>
+                      )}
+                    </div>
+                  )}
                   {stravaError && <div className="strava-error">⚠️ {stravaError}</div>}
                 </div>
               )}

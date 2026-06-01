@@ -51,7 +51,15 @@ export function clearToken() {
 }
 
 export function extractActivityId(input) {
-  // Accepteer URL zoals https://www.strava.com/activities/12345678 of gewoon een ID
   const match = input.match(/activities\/(\d+)/) || input.match(/^(\d+)$/)
   return match ? match[1] : null
+}
+
+export async function fetchActivities(token, page = 1) {
+  const resp = await fetch(
+    `https://www.strava.com/api/v3/athlete/activities?per_page=50&page=${page}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!resp.ok) throw new Error('Activiteiten ophalen mislukt')
+  return resp.json()
 }

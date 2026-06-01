@@ -83,13 +83,24 @@ export async function fetchRoutes(token, athleteId, page = 1) {
 }
 
 export async function fetchRouteStream(routeId, token) {
+  // Exporteer route als GPX en parseer die
   const resp = await fetch(
-    `https://www.strava.com/api/v3/routes/${routeId}/streams`,
+    `https://www.strava.com/api/v3/routes/${routeId}/export_gpx`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
-  const data = await resp.json()
-  if (!resp.ok) throw new Error(`Strava fout (${resp.status}): ${data.message || 'onbekend'}`)
-  const latlng = Array.isArray(data) ? data.find(s => s.type === 'latlng') : null
-  if (!latlng?.data) throw new Error('Geen GPS data gevonden in deze route')
-  return latlng.data.map(([lat, lon]) => ({ lat, lon }))
+  if (!resp.ok) {
+    const data = await resp.json().catch(() => ({}))
+    throw new Error(`Strava fout (${resp.status}): ${data.message || 'onbekend'}`)
+  }
+  const gpxText = await resp.text()
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(gpxText, 'application/xml')
+  const points = []
+  doc.querySelectorAll('trkpt, rtept').forEach(pt => {
+    const lat = parseFloat(pt.getAttribute('lat'))
+    const lon = parseFloat(pt.getAttribute('lon'))
+    if (!isNaN(lat) && !isNaN(lon)) points.push({ lat, lon })
+  })
+  if (points.length === 0) throw new Error('Geen GPS data gevonden in deze route')
+  return points
 }

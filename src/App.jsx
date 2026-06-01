@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "./supabase.js";
-import { stravaAuthUrl, exchangeCode, fetchActivityStream, fetchActivities, getStoredToken, storeToken, clearToken } from "./strava.js";
+import { stravaAuthUrl, exchangeCode, fetchRouteStream, fetchRoutes, fetchAthleteId, getStoredToken, storeToken, clearToken } from "./strava.js";
 
 // ─── GPX parser ───────────────────────────────────────────────────────────────
 function parseGPX(gpxText) {
@@ -319,7 +319,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [stravaToken, setStravaToken] = useState(() => getStoredToken());
-  const [stravaActivities, setStravaActivities] = useState([]);
+  const [stravaRoutes, setStravaRoutes] = useState([]);
   const [stravaSearch, setStravaSearch] = useState('');
   const [stravaLoading, setStravaLoading] = useState(false);
   const [stravaLoadingList, setStravaLoadingList] = useState(false);
@@ -341,18 +341,19 @@ export default function App() {
     }
   }, [])
 
-  // Activiteiten laden als token al beschikbaar is
+  // Routes laden als token al beschikbaar is
   useEffect(() => {
-    if (stravaToken && stravaActivities.length === 0) {
-      loadStravaActivities(stravaToken.access_token)
+    if (stravaToken && stravaRoutes.length === 0) {
+      loadStravaRoutes(stravaToken.access_token)
     }
   }, [stravaToken])
 
-  const loadStravaActivities = async (token) => {
+  const loadStravaRoutes = async (token) => {
     setStravaLoadingList(true)
     try {
-      const data = await fetchActivities(token)
-      setStravaActivities(data.filter(a => a.type === 'Ride' || a.type === 'VirtualRide' || a.sport_type?.includes('Ride')))
+      const athleteId = await fetchAthleteId(token)
+      const data = await fetchRoutes(token, athleteId)
+      setStravaRoutes(data)
     } catch (e) {
       setStravaError(e.message)
     } finally {
@@ -360,10 +361,10 @@ export default function App() {
     }
   }
 
-  const handleStravaLoad = async (activityId) => {
-    setStravaLoading(activityId); setStravaError('')
+  const handleStravaLoad = async (routeId) => {
+    setStravaLoading(routeId); setStravaError('')
     try {
-      const points = await fetchActivityStream(activityId, stravaToken.access_token)
+      const points = await fetchRouteStream(routeId, stravaToken.access_token)
       handleFilePoints(points)
     } catch (e) {
       setStravaError(e.message)
@@ -704,8 +705,8 @@ export default function App() {
                 <div className="strava-connected">
                   <div className="strava-connected-top">
                     <div className="strava-avatar">S</div>
-                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Strava activiteiten</span>
-                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); setStravaActivities([]); }}>Uitloggen</span>
+                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Mijn Strava routes</span>
+                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); setStravaRoutes([]); }}>Uitloggen</span>
                   </div>
                   <input
                     className="strava-input"
@@ -715,29 +716,31 @@ export default function App() {
                     style={{width:'100%',marginBottom:'8px'}}
                   />
                   {stravaLoadingList ? (
-                    <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Activiteiten laden...</div>
+                    <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Routes laden...</div>
                   ) : (
                     <div style={{maxHeight:'220px',overflowY:'auto',display:'flex',flexDirection:'column',gap:'4px'}}>
-                      {stravaActivities
-                        .filter(a => a.name.toLowerCase().includes(stravaSearch.toLowerCase()))
-                        .map(a => (
-                          <button key={a.id} disabled={stravaLoading === a.id}
-                            onClick={() => handleStravaLoad(a.id)}
+                      {stravaRoutes
+                        .filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase()))
+                        .map(r => (
+                          <button key={r.id} disabled={stravaLoading === r.id}
+                            onClick={() => handleStravaLoad(r.id)}
                             style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',border:'1px solid #ede9e4',borderRadius:'8px',background:'#fff',cursor:'pointer',textAlign:'left',transition:'all 0.15s'}}
                             onMouseEnter={e => e.currentTarget.style.borderColor='#fc4c02'}
                             onMouseLeave={e => e.currentTarget.style.borderColor='#ede9e4'}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
                             <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.name}</div>
-                              <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{new Date(a.start_date_local).toLocaleDateString('nl-NL')} · {(a.distance/1000).toFixed(1)} km</div>
+                              <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.name}</div>
+                              <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{(r.distance/1000).toFixed(1)} km</div>
                             </div>
-                            {stravaLoading === a.id
+                            {stravaLoading === r.id
                               ? <span style={{fontSize:'0.7rem',color:'#fc4c02'}}>laden...</span>
                               : <span style={{fontSize:'0.7rem',color:'#c4bdb5'}}>→</span>}
                           </button>
                         ))}
-                      {stravaActivities.filter(a => a.name.toLowerCase().includes(stravaSearch.toLowerCase())).length === 0 && (
-                        <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Geen activiteiten gevonden</div>
+                      {stravaRoutes.filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase())).length === 0 && (
+                        <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>
+                          {stravaRoutes.length === 0 ? 'Geen routes gevonden — maak eerst een route aan in Strava' : 'Geen routes gevonden'}
+                        </div>
                       )}
                     </div>
                   )}

@@ -3,7 +3,7 @@ const CLIENT_SECRET = import.meta.env.VITE_STRAVA_CLIENT_SECRET
 const REDIRECT_URI = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 export function stravaAuthUrl() {
-  return `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=activity:read_all&approval_prompt=auto`
+  return `https://www.strava.com/oauth/authorize?client_id=${CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=read,activity:read_all&approval_prompt=auto`
 }
 
 export async function exchangeCode(code) {
@@ -62,4 +62,34 @@ export async function fetchActivities(token, page = 1) {
   )
   if (!resp.ok) throw new Error('Activiteiten ophalen mislukt')
   return resp.json()
+}
+
+export async function fetchAthleteId(token) {
+  const resp = await fetch('https://www.strava.com/api/v3/athlete', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!resp.ok) throw new Error('Atleet ophalen mislukt')
+  const data = await resp.json()
+  return data.id
+}
+
+export async function fetchRoutes(token, athleteId, page = 1) {
+  const resp = await fetch(
+    `https://www.strava.com/api/v3/athletes/${athleteId}/routes?per_page=50&page=${page}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!resp.ok) throw new Error('Routes ophalen mislukt')
+  return resp.json()
+}
+
+export async function fetchRouteStream(routeId, token) {
+  const resp = await fetch(
+    `https://www.strava.com/api/v3/routes/${routeId}/streams`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+  if (!resp.ok) throw new Error('Route ophalen mislukt — controleer of de route bestaat')
+  const data = await resp.json()
+  const latlng = data.find(s => s.type === 'latlng')
+  if (!latlng?.data) throw new Error('Geen GPS data gevonden in deze route')
+  return latlng.data.map(([lat, lon]) => ({ lat, lon }))
 }

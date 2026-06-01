@@ -624,7 +624,7 @@ export default function App() {
 
       <div className="app">
         <header className="header">
-          <div className="logo"><img src="/coffeeroutelive/icon.svg" style={{width:'24px',height:'24px'}} alt="CoffeeRoute" /></div>
+          <div className="logo">☕</div>
           <div>
             <h1>CoffeeRoute</h1>
             <p>Vind koffiestops langs jouw fietsroute</p>

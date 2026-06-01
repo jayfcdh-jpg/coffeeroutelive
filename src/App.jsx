@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "./supabase.js";
+import { stravaAuthUrl, exchangeCode, fetchActivityStream, getStoredToken, storeToken, clearToken, extractActivityId } from "./strava.js";
 
 // ─── GPX parser ───────────────────────────────────────────────────────────────
 function parseGPX(gpxText) {
@@ -317,8 +318,39 @@ export default function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
+  const [stravaToken, setStravaToken] = useState(() => getStoredToken());
+  const [stravaInput, setStravaInput] = useState('');
+  const [stravaLoading, setStravaLoading] = useState(false);
+  const [stravaError, setStravaError] = useState('');
   const pickedRef = useRef([]);
   const fileRef = useRef();
+
+  // Strava OAuth callback afhandelen
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      window.history.replaceState({}, '', window.location.pathname)
+      exchangeCode(code).then(data => {
+        storeToken(data)
+        setStravaToken(data)
+      }).catch(() => setStravaError('Strava login mislukt, probeer opnieuw'))
+    }
+  }, [])
+
+  const handleStravaLoad = async () => {
+    const id = extractActivityId(stravaInput)
+    if (!id) { setStravaError('Voer een geldige Strava activiteit URL of ID in'); return }
+    setStravaLoading(true); setStravaError('')
+    try {
+      const points = await fetchActivityStream(id, stravaToken.access_token)
+      handleFilePoints(points)
+    } catch (e) {
+      setStravaError(e.message)
+    } finally {
+      setStravaLoading(false)
+    }
+  }
 
   const processRoute = useCallback(async (points) => {
     if (points.length < 2) { setStatus("error"); setErrorMsg("Geen geldige route gevonden."); return; }
@@ -383,6 +415,11 @@ export default function App() {
       setErrorMsg("Fout: " + e.message);
     }
   }, []);
+
+  const handleFilePoints = (points) => {
+    setStatus("parsing"); setCafes([]); setErrorMsg(""); setRoutePoints(null);
+    processRoute(points);
+  };
 
   const handleFile = (file) => {
     if (!file) return;
@@ -454,6 +491,22 @@ export default function App() {
 
         .hint { margin-top: 12px; padding: 12px 16px; background: #faf8f6; border: 1px solid #ede9e4; border-radius: 11px; font-size: 0.75rem; color: #a8a099; line-height: 1.7; }
         .hint strong { color: #e85d2e; font-weight: 600; }
+
+        .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: #c4bdb5; font-size: 0.74rem; font-weight: 600; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #ede9e4; }
+        .strava-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; background: #fc4c02; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(252,76,2,0.3); }
+        .strava-btn:hover { background: #e04400; transform: translateY(-1px); }
+        .strava-connected { background: #fff; border: 1px solid #ede9e4; border-radius: 14px; padding: 14px 16px; margin-top: 12px; }
+        .strava-connected-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .strava-avatar { width: 32px; height: 32px; border-radius: 50%; background: #fc4c02; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 0.84rem; flex-shrink: 0; }
+        .strava-input-row { display: flex; gap: 8px; }
+        .strava-input { flex: 1; padding: 9px 12px; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.82rem; font-family: inherit; color: #1c1917; }
+        .strava-input:focus { outline: none; border-color: #fc4c02; }
+        .strava-load-btn { padding: 9px 16px; background: #fc4c02; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; white-space: nowrap; }
+        .strava-load-btn:disabled { opacity: 0.5; cursor: default; }
+        .strava-error { margin-top: 8px; font-size: 0.76rem; color: #c0392b; }
+        .strava-logout { font-size: 0.7rem; color: #a8a099; cursor: pointer; margin-left: auto; }
+        .strava-logout:hover { color: #78716c; }
 
         .spinner-bar { margin-top: 16px; padding: 14px 18px; background: #fff; border: 1px solid #ede9e4; border-radius: 12px; display: flex; align-items: center; gap: 12px; }
         .spinner { width: 18px; height: 18px; border: 2.5px solid #ede9e4; border-top-color: #e85d2e; border-radius: 50%; animation: spin 0.75s linear infinite; flex-shrink: 0; }
@@ -618,9 +671,39 @@ export default function App() {
                 <input ref={fileRef} type="file" accept=".gpx,.fit" onChange={(e) => handleFile(e.target.files[0])} />
               </div>
               <div className="hint">
-                <strong>Strava:</strong> Activiteit → ••• → Exporteer GPX of Exporteer origineel (.fit) &nbsp;·&nbsp;
                 <strong>Wahoo:</strong> Activiteit → Deel → Exporteer als .fit
               </div>
+
+              <div className="divider">of</div>
+
+              {!stravaToken ? (
+                <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                  Verbind met Strava
+                </button>
+              ) : (
+                <div className="strava-connected">
+                  <div className="strava-connected-top">
+                    <div className="strava-avatar">S</div>
+                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Verbonden met Strava</span>
+                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); }}>Uitloggen</span>
+                  </div>
+                  <div className="strava-input-row">
+                    <input
+                      className="strava-input"
+                      placeholder="Plak een Strava activiteit URL of ID"
+                      value={stravaInput}
+                      onChange={e => setStravaInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleStravaLoad()}
+                    />
+                    <button className="strava-load-btn" disabled={stravaLoading || !stravaInput} onClick={handleStravaLoad}>
+                      {stravaLoading ? '...' : 'Laden'}
+                    </button>
+                  </div>
+                  {stravaError && <div className="strava-error">⚠️ {stravaError}</div>}
+                </div>
+              )}
+
               {status === "error" && <div className="error-box">⚠️ {errorMsg}</div>}
             </div>
           </div>

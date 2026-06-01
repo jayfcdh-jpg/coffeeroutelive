@@ -318,6 +318,7 @@ export default function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
+  const [uploadTab, setUploadTab] = useState('strava'); // 'strava' | 'bestand'
   const [stravaToken, setStravaToken] = useState(() => getStoredToken());
   const [stravaRoutes, setStravaRoutes] = useState([]);
   const [stravaSearch, setStravaSearch] = useState('');
@@ -515,6 +516,9 @@ export default function App() {
 
         .divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; color: #c4bdb5; font-size: 0.74rem; font-weight: 600; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #ede9e4; }
+        .upload-tabs { display: flex; gap: 0; background: #f7f5f2; border-radius: 12px; padding: 4px; margin-bottom: 20px; }
+        .upload-tab { flex: 1; padding: 9px; border: none; background: transparent; border-radius: 9px; font-size: 0.82rem; font-weight: 600; color: #a8a099; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .upload-tab.active { background: #fff; color: #1c1917; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .strava-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; background: #fc4c02; color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(252,76,2,0.3); }
         .strava-btn:hover { background: #e04400; transform: translateY(-1px); }
         .strava-connected { background: #fff; border: 1px solid #ede9e4; border-radius: 14px; padding: 14px 16px; margin-top: 12px; }
@@ -672,81 +676,98 @@ export default function App() {
                 <h2>Waar stop jij voor koffie?</h2>
                 <p>Upload je fietsroute en ontdek koffiestops langs de weg</p>
               </div>
-              <div
-                className={`dropzone${dragOver ? " over" : ""}`}
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={handleDrop}
-                onClick={() => fileRef.current?.click()}
-              >
-                <span className="drop-icon">🗺️</span>
-                <div className="drop-title">Sleep je route hierheen</div>
-                <div className="drop-sub">of klik om een bestand te kiezen</div>
-                <div className="badges">
-                  <span className="badge badge-gpx">GPX</span>
-                  <span className="badge badge-fit">FIT</span>
-                </div>
-                <button className="drop-btn" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
-                  Bestand kiezen
+              <div className="upload-tabs">
+                <button className={`upload-tab${uploadTab === 'strava' ? ' active' : ''}`} onClick={() => setUploadTab('strava')}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill={uploadTab === 'strava' ? '#fc4c02' : '#a8a099'}><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                  Strava
                 </button>
-                <input ref={fileRef} type="file" accept=".gpx,.fit" onChange={(e) => handleFile(e.target.files[0])} />
-              </div>
-              <div className="hint">
-                <strong>Wahoo:</strong> Activiteit → Deel → Exporteer als .fit
+                <button className={`upload-tab${uploadTab === 'bestand' ? ' active' : ''}`} onClick={() => setUploadTab('bestand')}>
+                  📂 Bestand
+                </button>
               </div>
 
-              <div className="divider">of</div>
-
-              {!stravaToken ? (
-                <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-                  Importeer via Strava
-                </button>
-              ) : (
-                <div className="strava-connected">
-                  <div className="strava-connected-top">
-                    <div className="strava-avatar">S</div>
-                    <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Mijn Strava routes</span>
-                    <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); setStravaRoutes([]); }}>Uitloggen</span>
-                  </div>
-                  <input
-                    className="strava-input"
-                    placeholder="Zoek op naam..."
-                    value={stravaSearch}
-                    onChange={e => setStravaSearch(e.target.value)}
-                    style={{width:'100%',marginBottom:'8px'}}
-                  />
-                  {stravaLoadingList ? (
-                    <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Routes laden...</div>
+              {uploadTab === 'strava' && (
+                <>
+                  {!stravaToken ? (
+                    <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                      Verbind met Strava
+                    </button>
                   ) : (
-                    <div style={{maxHeight:'220px',overflowY:'auto',display:'flex',flexDirection:'column',gap:'4px'}}>
-                      {stravaRoutes
-                        .filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase()))
-                        .map(r => (
-                          <button key={r.id_str || r.id} disabled={stravaLoading === (r.id_str || r.id)}
-                            onClick={() => handleStravaLoad(r.id_str || String(r.id))}
-                            style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',border:'1px solid #ede9e4',borderRadius:'8px',background:'#fff',cursor:'pointer',textAlign:'left',transition:'all 0.15s'}}
-                            onMouseEnter={e => e.currentTarget.style.borderColor='#fc4c02'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor='#ede9e4'}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-                            <div style={{flex:1,minWidth:0}}>
-                              <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.name}</div>
-                              <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{(r.distance/1000).toFixed(1)} km</div>
+                    <div className="strava-connected">
+                      <div className="strava-connected-top">
+                        <div className="strava-avatar">S</div>
+                        <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917'}}>Mijn Strava routes</span>
+                        <span className="strava-logout" onClick={() => { clearToken(); setStravaToken(null); setStravaRoutes([]); }}>Uitloggen</span>
+                      </div>
+                      <input
+                        className="strava-input"
+                        placeholder="Zoek op naam..."
+                        value={stravaSearch}
+                        onChange={e => setStravaSearch(e.target.value)}
+                        style={{width:'100%',marginBottom:'8px'}}
+                      />
+                      {stravaLoadingList ? (
+                        <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>Routes laden...</div>
+                      ) : (
+                        <div style={{maxHeight:'220px',overflowY:'auto',display:'flex',flexDirection:'column',gap:'4px'}}>
+                          {stravaRoutes
+                            .filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase()))
+                            .map(r => (
+                              <button key={r.id_str || r.id} disabled={stravaLoading === (r.id_str || r.id)}
+                                onClick={() => handleStravaLoad(r.id_str || String(r.id))}
+                                style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',border:'1px solid #ede9e4',borderRadius:'8px',background:'#fff',cursor:'pointer',textAlign:'left',transition:'all 0.15s'}}
+                                onMouseEnter={e => e.currentTarget.style.borderColor='#fc4c02'}
+                                onMouseLeave={e => e.currentTarget.style.borderColor='#ede9e4'}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fc4c02"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                                <div style={{flex:1,minWidth:0}}>
+                                  <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.name}</div>
+                                  <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{(r.distance/1000).toFixed(1)} km</div>
+                                </div>
+                                {stravaLoading === (r.id_str || r.id)
+                                  ? <span style={{fontSize:'0.7rem',color:'#fc4c02'}}>laden...</span>
+                                  : <span style={{fontSize:'0.7rem',color:'#c4bdb5'}}>→</span>}
+                              </button>
+                            ))}
+                          {stravaRoutes.filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase())).length === 0 && (
+                            <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>
+                              {stravaRoutes.length === 0 ? 'Geen routes — maak eerst een route aan in Strava' : 'Geen routes gevonden'}
                             </div>
-                            {stravaLoading === (r.id_str || r.id)
-                              ? <span style={{fontSize:'0.7rem',color:'#fc4c02'}}>laden...</span>
-                              : <span style={{fontSize:'0.7rem',color:'#c4bdb5'}}>→</span>}
-                          </button>
-                        ))}
-                      {stravaRoutes.filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase())).length === 0 && (
-                        <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.8rem',padding:'12px 0'}}>
-                          {stravaRoutes.length === 0 ? 'Geen routes gevonden — maak eerst een route aan in Strava' : 'Geen routes gevonden'}
+                          )}
                         </div>
                       )}
+                      {stravaError && <div className="strava-error">⚠️ {stravaError}</div>}
                     </div>
                   )}
-                  {stravaError && <div className="strava-error">⚠️ {stravaError}</div>}
-                </div>
+                </>
+              )}
+
+              {uploadTab === 'bestand' && (
+                <>
+                  <div
+                    className={`dropzone${dragOver ? " over" : ""}`}
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    <span className="drop-icon">🗺️</span>
+                    <div className="drop-title">Sleep je route hierheen</div>
+                    <div className="drop-sub">of klik om een bestand te kiezen</div>
+                    <div className="badges">
+                      <span className="badge badge-gpx">GPX</span>
+                      <span className="badge badge-fit">FIT</span>
+                    </div>
+                    <button className="drop-btn" onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
+                      Bestand kiezen
+                    </button>
+                    <input ref={fileRef} type="file" accept=".gpx,.fit" onChange={(e) => handleFile(e.target.files[0])} />
+                  </div>
+                  <div className="hint">
+                    <strong>Wahoo:</strong> Activiteit → Deel → Exporteer als .fit &nbsp;·&nbsp;
+                    <strong>Strava:</strong> Activiteit → ••• → Exporteer GPX
+                  </div>
+                </>
               )}
 
               {status === "error" && <div className="error-box">⚠️ {errorMsg}</div>}

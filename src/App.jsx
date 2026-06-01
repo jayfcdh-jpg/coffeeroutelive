@@ -640,7 +640,7 @@ export default function App() {
         {screen === "upload" ? (
           <header className="header header-upload">
             <h1>Café.</h1>
-            <p style={{fontSize:'0.78rem',color:'#c4bdb5',fontWeight:500,marginTop:'4px',letterSpacing:'0.01em'}}>Koffiestops langs jouw fietsroute</p>
+            <p style={{fontSize:'0.78rem',color:'#c4bdb5',fontWeight:500,marginTop:'1px',letterSpacing:'0.01em'}}>Koffiestops langs jouw fietsroute</p>
           </header>
         ) : (
           <header className="header">

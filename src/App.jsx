@@ -707,10 +707,13 @@ export default function App() {
               {uploadTab === 'strava' && (
                 <>
                   {!stravaToken ? (
-                    <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
-                      Verbind met Strava
-                    </button>
+                    <>
+                      <button className="strava-btn" onClick={() => window.location.href = stravaAuthUrl()}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                        Verbind met Strava
+                      </button>
+                      <p style={{fontSize:'0.76rem',color:'#a8a099',textAlign:'center',marginTop:'10px',lineHeight:1.6}}>Log in met Strava om de perfecte koffiestops langs jouw route te vinden.</p>
+                    </>
                   ) : (
                     <div className="strava-connected">
                       <div className="strava-connected-top">

@@ -475,10 +475,9 @@ export default function App() {
         .logo { width: 38px; height: 38px; background: linear-gradient(135deg, #e85d2e, #f5974a); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,93,46,0.3); }
         .header h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
         .header p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
-        .header-upload { justify-content: center; flex-direction: column; padding: 28px 40px 24px; border-bottom: none; background: transparent; position: relative; box-shadow: none; }
-        .header-upload .logo { width: 52px; height: 52px; font-size: 24px; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(232,93,46,0.35); }
-        .header-upload h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; text-align: center; }
-        .header-upload p { font-size: 0.88rem; text-align: center; margin-top: 4px; }
+        .header-upload { justify-content: center; flex-direction: row; padding: 16px 24px; border-bottom: 1px solid #e8e4df; background: #fff; }
+        .header-upload h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
+        .header-upload p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
         .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; margin-left: auto; }
@@ -500,11 +499,7 @@ export default function App() {
         .upload-screen::before { content: ''; position: absolute; top: -120px; right: -120px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(232,93,46,0.08) 0%, transparent 70%); pointer-events: none; }
         .upload-screen::after { content: ''; position: absolute; bottom: -80px; left: -80px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(245,151,74,0.07) 0%, transparent 70%); pointer-events: none; }
         .upload-card { width: 100%; max-width: 480px; position: relative; z-index: 1; }
-        .upload-heading { text-align: center; margin-bottom: 32px; }
-        .upload-heading .hero-icon { font-size: 3rem; margin-bottom: 12px; display: block; filter: drop-shadow(0 4px 12px rgba(232,93,46,0.3)); }
-        .upload-heading h2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.05em; color: #1c1917; margin-bottom: 10px; line-height: 1.1; }
-        .upload-heading h2 span { color: #e85d2e; }
-        .upload-heading p { font-size: 0.9rem; color: #a8a099; font-weight: 500; line-height: 1.7; }
+        .upload-heading { display: none; }
         .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 28px; }
         .feature { background: #fff; border: 1px solid #ede9e4; border-radius: 14px; padding: 14px 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         .feature-icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
@@ -645,8 +640,10 @@ export default function App() {
         {screen === "upload" ? (
           <header className="header header-upload">
             <div className="logo">☕</div>
-            <h1>Café.</h1>
-            <p>Vind koffiestops langs jouw fietsroute</p>
+            <div style={{textAlign:'center'}}>
+              <h1>Café.</h1>
+              <p>Vind koffiestops langs jouw fietsroute</p>
+            </div>
           </header>
         ) : (
           <header className="header">

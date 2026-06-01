@@ -476,7 +476,7 @@ export default function App() {
         .header h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
         .header p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
         .header-upload { justify-content: center; flex-direction: column; padding: 22px 24px; border-bottom: none; background: transparent; box-shadow: none; gap: 0; }
-        .header-upload h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+        .header-upload h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; display: inline-block; border-bottom: 2px solid rgba(232,93,46,0.35); padding-bottom: 1px; }
         .header-upload .logo { display: none; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f7f5f2; border: 1px solid #ede9e4; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #a8a099; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
@@ -647,7 +647,7 @@ export default function App() {
               ← Nieuwe route
             </button>
             <div style={{flex:1, textAlign:'center'}}>
-              <h1 style={{fontSize:'1.3rem',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1}}>Café.</h1>
+              <h1 style={{fontSize:'1.3rem',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,display:'inline-block',borderBottom:'2px solid rgba(232,93,46,0.35)',paddingBottom:'1px'}}>Café.</h1>
               <p style={{fontSize:'0.72rem',color:'#c4bdb5',fontWeight:500,marginTop:'0px'}}>Koffiestops langs jouw fietsroute</p>
             </div>
             <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>

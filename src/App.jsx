@@ -480,7 +480,7 @@ export default function App() {
         .header-upload .logo { display: none; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f7f5f2; border: 1px solid #ede9e4; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #a8a099; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
-        .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; margin-left: auto; }
+        .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #ede9e4; border: none; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; }
         .settings-btn:hover { background: #ede9e4; color: #1c1917; }
         .settings-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 320px; background: #fff; border-left: 1px solid #e8e4df; box-shadow: -4px 0 24px rgba(0,0,0,0.08); z-index: 200; padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; }
         .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 199; }
@@ -643,15 +643,14 @@ export default function App() {
           </header>
         ) : (
           <header className="header">
-            <div className="logo">☕</div>
-            <div>
-              <h1>Café.</h1>
-              <p>Vind koffiestops langs jouw fietsroute</p>
-            </div>
             <button className="back-btn" onClick={() => { setScreen("upload"); setStatus("idle"); setRoutePoints(null); setCafes([]); }}>
               ← Nieuwe route
             </button>
-            <button className="settings-btn" style={{marginLeft:'8px'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
+            <div style={{flex:1, textAlign:'center'}}>
+              <h1 style={{fontSize:'1.3rem',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1}}>Café.</h1>
+              <p style={{fontSize:'0.72rem',color:'#c4bdb5',fontWeight:500,marginTop:'0px'}}>Koffiestops langs jouw fietsroute</p>
+            </div>
+            <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
           </header>
         )}
 

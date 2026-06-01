@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/**)",
+      "Bash(unzip -o \"/Users/jayschipper/Downloads/coffeeroute-supabase-v2.zip\" -d coffeeroute-v2)",
+      "Bash(cp /tmp/coffeeroute-v2/coffeeroute-supabase/scripts/import-osm.js /Users/jayschipper/Desktop/coffeeroute-supabase/scripts/import-osm.js)",
+      "Bash(curl -s -X POST --data-urlencode \"data@/tmp/test_query.txt\" \"https://overpass-api.de/api/interpreter\")",
+      "Bash(curl -v -X POST --data-urlencode \"data@/tmp/test_query.txt\" \"https://overpass-api.de/api/interpreter\")",
+      "Bash(curl -s -X POST --data-urlencode \"data@/tmp/test_query.txt\" \"https://overpass.kumi.systems/api/interpreter\")",
+      "Bash(curl -v \"https://overpass.kumi.systems/api/interpreter\")",
+      "Bash(curl -s -X POST --data-urlencode \"data=[out:json][timeout:10];node[\\\\\"amenity\\\\\"=\\\\\"cafe\\\\\"]\\(52.3,4.8,52.4,4.9\\);out body;\" \"https://overpass.private.coffee/api/interpreter\")"
+    ]
+  }
+}

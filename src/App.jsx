@@ -862,10 +862,12 @@ export default function App() {
                 <RouteMap routePoints={routePoints} stops={picked} />
               </div>
 
-              {/* Stop planner */}
+              {/* Stops sectie */}
               <div className="stop-planner">
-                <div className="stop-planner-top">
-                  <span className="stop-planner-label">Hoeveel stops wil je?</span>
+
+                {/* Rij 1: aantal + filters */}
+                <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'14px',flexWrap:'wrap'}}>
+                  <span style={{fontSize:'0.72rem',fontWeight:700,color:'#a8a099',textTransform:'uppercase',letterSpacing:'0.08em'}}>Stops</span>
                   <div className="num-stops">
                     <button className="num-btn" disabled={numStops <= 1} onClick={() => {
                       const n = numStops - 1;
@@ -879,25 +881,38 @@ export default function App() {
                       setStopPositions(Array.from({length: n}, (_, i) => Math.round(((i + 1) / (n + 1)) * 100)));
                     }}>+</button>
                   </div>
+                  <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:'6px'}}>
+                    <div className="filter-group">
+                      {[["all","Alles"],["koffiebar","☕"],["bakkerij","🥐"]].map(([val, label]) => (
+                        <button key={val} className={`filter-btn${filterType === val ? " active" : ""}`} onClick={() => setFilterType(val)}>{label}</button>
+                      ))}
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:'5px'}}>
+                      <input type="range" min="0.2" max="2" step="0.1" value={maxDist} onChange={e => setMaxDist(parseFloat(e.target.value))} style={{width:'60px',accentColor:'#e85d2e'}} />
+                      <span style={{fontSize:'0.68rem',fontWeight:700,color:'#e85d2e',whiteSpace:'nowrap'}}>{maxDist < 1 ? `${Math.round(maxDist*1000)}m` : `${maxDist.toFixed(1)}km`}</span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Stop lijst */}
                 {Array.from({ length: numStops }, (_, i) => {
                   const pct = stopPositions[i] ?? Math.round(((i + 1) / (numStops + 1)) * 100);
                   const km = ((pct / 100) * dist).toFixed(1);
                   const match = picked[i];
                   const editing = showStopEditor === i;
                   return (
-                    <div key={i} style={{marginBottom:'6px'}}>
+                    <div key={i} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                         <div className="stop-dot">{i + 1}</div>
-                        <span style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                          {match ? match.name : '—'}
+                        <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                          {match ? match.name : <span style={{color:'#c4bdb5',fontWeight:500}}>Geen stop gevonden</span>}
                         </span>
-                        <span style={{fontSize:'0.72rem',color:'#a8a099',whiteSpace:'nowrap'}}>
-                          km {km} · {fmtTime(parseFloat(km), speed)}
+                        <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>
+                          {km} km · {fmtTime(parseFloat(km), speed)}
                         </span>
-                        <button style={{padding:'2px 8px',border:'1px solid #e8e4df',borderRadius:'6px',background: editing ? '#e85d2e' : '#f7f5f2',color: editing ? '#fff' : '#78716c',fontSize:'0.7rem',fontWeight:700,cursor:'pointer',flexShrink:0}}
+                        <button style={{padding:'2px 8px',border:'none',borderRadius:'6px',background: editing ? '#e85d2e' : '#ede9e4',color: editing ? '#fff' : '#78716c',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}
                           onClick={() => setShowStopEditor(editing ? false : i)}>
-                          {editing ? 'Klaar' : 'Aanpassen'}
+                          {editing ? 'Klaar' : '✏️'}
                         </button>
                       </div>
                       {editing && (
@@ -908,34 +923,24 @@ export default function App() {
                               next[i] = parseInt(e.target.value);
                               setStopPositions(next);
                             }} />
-                          <div style={{fontSize:'0.72rem',color:'#e85d2e',fontWeight:700,textAlign:'right',marginTop:'2px'}}>
-                            km {km} · {fmtTime(parseFloat(km), speed)}
+                          <div style={{fontSize:'0.7rem',color:'#e85d2e',fontWeight:700,textAlign:'right',marginTop:'1px'}}>
+                            {km} km · {fmtTime(parseFloat(km), speed)}
                           </div>
                         </div>
                       )}
                     </div>
                   );
                 })}
+
+                {/* Alle stops toggle */}
+                <button onClick={() => setShowAllStops(v => !v)}
+                  style={{marginTop:'8px',width:'100%',padding:'7px',border:'1px dashed #e8e4df',borderRadius:'8px',background:'transparent',fontSize:'0.72rem',fontWeight:600,color:'#a8a099',cursor:'pointer'}}>
+                  {showAllStops ? '← Terug naar selectie' : `Bekijk alle ${pool.length} stops langs de route →`}
+                </button>
               </div>
 
-              <div className="filters">
-                <div className="filter-group">
-                  {[["all","Alles"],["koffiebar","☕ Koffiebar"],["bakkerij","🥐 Bakkerij"]].map(([val, label]) => (
-                    <button key={val} className={`filter-btn${filterType === val ? " active" : ""}`} onClick={() => setFilterType(val)}>{label}</button>
-                  ))}
-                </div>
-                <div className="dist-filter">
-                  <label>Max afstand:</label>
-                  <input type="range" min="0.2" max="2" step="0.1" value={maxDist} onChange={e => setMaxDist(parseFloat(e.target.value))} />
-                  <span>{maxDist < 1 ? `${Math.round(maxDist * 1000)}m` : `${maxDist.toFixed(1)}km`}</span>
-                </div>
-              </div>
-
-              <div className="section-title" style={{cursor:'pointer'}} onClick={() => setShowAllStops(v => !v)}>
-                {showAllStops ? `Alle stops (${pool.length})` : `Geselecteerde stops (${picked.length})`}
-                <span style={{marginLeft:'auto',fontSize:'0.7rem',color:'#e85d2e',fontWeight:700,textTransform:'none',letterSpacing:0}}>
-                  {showAllStops ? '← Terug naar selectie' : 'Bekijk alle stops →'}
-                </span>
+              <div className="section-title">
+                {showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}
               </div>
               <div className="cafe-list">
                 {(showAllStops ? pool : picked).length === 0

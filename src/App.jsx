@@ -475,8 +475,8 @@ export default function App() {
         .logo { width: 38px; height: 38px; background: linear-gradient(135deg, #e85d2e, #f5974a); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,93,46,0.3); }
         .header h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
         .header p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
-        .header-upload { justify-content: center; flex-direction: column; padding: 22px 24px; border-bottom: none; background: transparent; box-shadow: none; }
-        .header-upload h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.05em; }
+        .header-upload { justify-content: center; flex-direction: column; padding: 22px 24px; border-bottom: none; background: transparent; box-shadow: none; gap: 0; }
+        .header-upload h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
         .header-upload .logo { display: none; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
@@ -640,7 +640,7 @@ export default function App() {
         {screen === "upload" ? (
           <header className="header header-upload">
             <h1>Café.</h1>
-            <p style={{fontSize:'0.78rem',color:'#c4bdb5',fontWeight:500,marginTop:'1px',letterSpacing:'0.01em'}}>Koffiestops langs jouw fietsroute</p>
+            <p style={{fontSize:'0.78rem',color:'#c4bdb5',fontWeight:500,marginTop:'0px',letterSpacing:'0.01em',lineHeight:1}}>Koffiestops langs jouw fietsroute</p>
           </header>
         ) : (
           <header className="header">

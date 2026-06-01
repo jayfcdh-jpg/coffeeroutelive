@@ -784,8 +784,7 @@ export default function App() {
                     <input ref={fileRef} type="file" accept=".gpx,.fit" onChange={(e) => handleFile(e.target.files[0])} />
                   </div>
                   <div className="hint" style={{marginTop:'10px'}}>
-                    <strong>Wahoo:</strong> Activiteit → Deel → Exporteer als .fit &nbsp;·&nbsp;
-                    <strong>Strava:</strong> Activiteit → ••• → Exporteer GPX
+                    Upload een <strong>.gpx</strong> of <strong>.fit</strong> bestand van jouw fietsroute.
                   </div>
                 </>
               )}

@@ -1,5 +1,4 @@
 const CLIENT_ID = import.meta.env.VITE_STRAVA_CLIENT_ID || '254453'
-const CLIENT_SECRET = import.meta.env.VITE_STRAVA_CLIENT_SECRET
 const REDIRECT_URI = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 export function stravaAuthUrl() {
@@ -7,16 +6,14 @@ export function stravaAuthUrl() {
 }
 
 export async function exchangeCode(code) {
-  const resp = await fetch('https://www.strava.com/oauth/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      code,
-      grant_type: 'authorization_code',
-    }),
-  })
+  const resp = await fetch(
+    'https://bffuibalmiiczhjxbbwu.supabase.co/functions/v1/strava-token',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    }
+  )
   if (!resp.ok) throw new Error('Strava login mislukt')
   return resp.json()
 }

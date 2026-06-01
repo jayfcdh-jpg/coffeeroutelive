@@ -83,7 +83,6 @@ export async function fetchRoutes(token, athleteId, page = 1) {
 }
 
 export async function fetchRouteStream(routeId, token) {
-  // Exporteer route als GPX en parseer die
   const resp = await fetch(
     `https://www.strava.com/api/v3/routes/${routeId}/export_gpx`,
     { headers: { Authorization: `Bearer ${token}` } }

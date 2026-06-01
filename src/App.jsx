@@ -723,8 +723,8 @@ export default function App() {
                       {stravaRoutes
                         .filter(r => r.name.toLowerCase().includes(stravaSearch.toLowerCase()))
                         .map(r => (
-                          <button key={r.id} disabled={stravaLoading === r.id}
-                            onClick={() => handleStravaLoad(r.id)}
+                          <button key={r.id_str || r.id} disabled={stravaLoading === (r.id_str || r.id)}
+                            onClick={() => handleStravaLoad(r.id_str || String(r.id))}
                             style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',border:'1px solid #ede9e4',borderRadius:'8px',background:'#fff',cursor:'pointer',textAlign:'left',transition:'all 0.15s'}}
                             onMouseEnter={e => e.currentTarget.style.borderColor='#fc4c02'}
                             onMouseLeave={e => e.currentTarget.style.borderColor='#ede9e4'}>
@@ -733,7 +733,7 @@ export default function App() {
                               <div style={{fontSize:'0.82rem',fontWeight:600,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{r.name}</div>
                               <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{(r.distance/1000).toFixed(1)} km</div>
                             </div>
-                            {stravaLoading === r.id
+                            {stravaLoading === (r.id_str || r.id)
                               ? <span style={{fontSize:'0.7rem',color:'#fc4c02'}}>laden...</span>
                               : <span style={{fontSize:'0.7rem',color:'#c4bdb5'}}>→</span>}
                           </button>

@@ -505,18 +505,17 @@ export default function App() {
         .feature-icon { font-size: 1.4rem; margin-bottom: 6px; display: block; }
         .feature-label { font-size: 0.7rem; font-weight: 700; color: #78716c; line-height: 1.4; }
 
-        .dropzone { border: 2px dashed #d6d0c9; border-radius: 20px; padding: 44px 28px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fff; position: relative; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-        .dropzone::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% -10%, rgba(232,93,46,0.05) 0%, transparent 60%); pointer-events: none; }
+        .dropzone { border: 2px dashed #e8e4df; border-radius: 16px; padding: 32px 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #faf8f6; position: relative; overflow: hidden; }
         .dropzone.over { border-color: #e85d2e; background: #fff9f7; box-shadow: 0 0 0 4px rgba(232,93,46,0.08); }
-        .dropzone:hover { border-color: #bfb8b0; }
-        .drop-icon { font-size: 2.4rem; margin-bottom: 10px; display: block; }
-        .drop-title { font-size: 1rem; font-weight: 700; color: #1c1917; margin-bottom: 4px; }
-        .drop-sub { font-size: 0.78rem; color: #a8a099; font-weight: 500; }
+        .dropzone:hover { border-color: #e85d2e; background: #fff9f7; }
+        .drop-icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .drop-title { font-size: 0.92rem; font-weight: 700; color: #1c1917; margin-bottom: 3px; }
+        .drop-sub { font-size: 0.75rem; color: #a8a099; font-weight: 500; }
         .badges { display: inline-flex; gap: 6px; margin-top: 10px; }
         .badge { padding: 2px 9px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
         .badge-gpx { background: #f0faf0; color: #2d8f26; border: 1px solid #b8e8b5; }
         .badge-fit { background: #f0f4ff; color: #2d52c4; border: 1px solid #b8c8f5; }
-        .drop-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; padding: 10px 24px; background: #e85d2e; color: #fff; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; border: none; transition: all 0.2s; box-shadow: 0 2px 8px rgba(232,93,46,0.3); }
+        .drop-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 10px 28px; background: #e85d2e; color: #fff; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; border: none; transition: all 0.2s; box-shadow: 0 2px 8px rgba(232,93,46,0.25); }
         .drop-btn:hover { background: #d44e21; transform: translateY(-1px); }
         input[type=file] { display: none; }
 
@@ -772,8 +771,8 @@ export default function App() {
                     onDrop={handleDrop}
                     onClick={() => fileRef.current?.click()}
                   >
-                    <span className="drop-icon">🗺️</span>
-                    <div className="drop-title">Sleep je route hierheen</div>
+                    <span className="drop-icon">📂</span>
+                    <div className="drop-title">{dragOver ? 'Laat los om te uploaden' : 'Sleep je route hierheen'}</div>
                     <div className="drop-sub">of klik om een bestand te kiezen</div>
                     <div className="badges">
                       <span className="badge badge-gpx">GPX</span>
@@ -784,7 +783,7 @@ export default function App() {
                     </button>
                     <input ref={fileRef} type="file" accept=".gpx,.fit" onChange={(e) => handleFile(e.target.files[0])} />
                   </div>
-                  <div className="hint">
+                  <div className="hint" style={{marginTop:'10px'}}>
                     <strong>Wahoo:</strong> Activiteit → Deel → Exporteer als .fit &nbsp;·&nbsp;
                     <strong>Strava:</strong> Activiteit → ••• → Exporteer GPX
                   </div>

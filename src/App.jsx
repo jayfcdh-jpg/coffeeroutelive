@@ -687,20 +687,6 @@ export default function App() {
                 <p>Laad je fietsroute in en ontdek de beste cafés en bakkerijen onderweg</p>
               </div>
 
-              <div className="features">
-                <div className="feature">
-                  <span className="feature-icon">🗺️</span>
-                  <div className="feature-label">Importeer via Strava of bestand</div>
-                </div>
-                <div className="feature">
-                  <span className="feature-icon">☕</span>
-                  <div className="feature-label">Koffiebars & bakkerijen langs de weg</div>
-                </div>
-                <div className="feature">
-                  <span className="feature-icon">⏱️</span>
-                  <div className="feature-label">Plan stops op tijd & afstand</div>
-                </div>
-              </div>
               <div className="upload-box">
               <div className="upload-tabs">
                 <button className={`upload-tab${uploadTab === 'strava' ? ' active' : ''}`} onClick={() => setUploadTab('strava')}>

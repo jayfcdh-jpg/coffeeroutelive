@@ -634,7 +634,7 @@ export default function App() {
               ← Nieuwe route
             </button>
           )}
-          <button className="settings-btn" style={{marginLeft: screen === "results" ? '8px' : 'auto'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
+          {screen === "results" && <button className="settings-btn" style={{marginLeft:'8px'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>}
         </header>
 
         {showSettings && (

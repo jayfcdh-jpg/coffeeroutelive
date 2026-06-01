@@ -416,7 +416,7 @@ export default function App() {
         .header p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
-        .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; margin-left: 8px; }
+        .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; margin-left: auto; }
         .settings-btn:hover { background: #ede9e4; color: #1c1917; }
         .settings-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 320px; background: #fff; border-left: 1px solid #e8e4df; box-shadow: -4px 0 24px rgba(0,0,0,0.08); z-index: 200; padding: 28px 24px; display: flex; flex-direction: column; gap: 24px; }
         .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 199; }
@@ -560,7 +560,7 @@ export default function App() {
               ← Nieuwe route
             </button>
           )}
-          <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
+          <button className="settings-btn" style={{marginLeft: screen === "results" ? '8px' : 'auto'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
         </header>
 
         {showSettings && (

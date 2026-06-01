@@ -87,9 +87,9 @@ export async function fetchRouteStream(routeId, token) {
     `https://www.strava.com/api/v3/routes/${routeId}/streams`,
     { headers: { Authorization: `Bearer ${token}` } }
   )
-  if (!resp.ok) throw new Error('Route ophalen mislukt — controleer of de route bestaat')
   const data = await resp.json()
-  const latlng = data.find(s => s.type === 'latlng')
+  if (!resp.ok) throw new Error(`Strava fout (${resp.status}): ${data.message || 'onbekend'}`)
+  const latlng = Array.isArray(data) ? data.find(s => s.type === 'latlng') : null
   if (!latlng?.data) throw new Error('Geen GPS data gevonden in deze route')
   return latlng.data.map(([lat, lon]) => ({ lat, lon }))
 }

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Achtergrond -->
+  <rect width="512" height="512" rx="112" fill="#e85d2e"/>
+
+  <!-- Koffiekopje -->
+  <rect x="140" y="220" width="180" height="130" rx="16" fill="white"/>
+  <path d="M320 255 Q380 255 380 300 Q380 345 320 345" stroke="white" stroke-width="22" fill="none" stroke-linecap="round"/>
+  <rect x="120" y="355" width="220" height="20" rx="10" fill="white"/>
+
+  <!-- Stoom -->
+  <path d="M185 200 Q195 175 185 155" stroke="white" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M230 200 Q240 175 230 155" stroke="white" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M275 200 Q285 175 275 155" stroke="white" stroke-width="14" fill="none" stroke-linecap="round"/>
+
+  <!-- Route pijl -->
+  <path d="M340 150 L390 150 L390 120 L440 165 L390 210 L390 180 L340 180 Z" fill="white" opacity="0.9"/>
+</svg>

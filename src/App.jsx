@@ -639,7 +639,7 @@ export default function App() {
         <header className="header">
           <div className="logo">☕</div>
           <div>
-            <h1>CoffeeRoute</h1>
+            <h1>Café.</h1>
             <p>Vind koffiestops langs jouw fietsroute</p>
           </div>
           {screen === "results" && (
@@ -683,7 +683,7 @@ export default function App() {
             <div className="upload-card">
               <div className="upload-heading">
                 <span className="hero-icon">☕</span>
-                <h2>Vind koffiestops langs <span>jouw route</span></h2>
+                <h2>Café. <span>Vind jouw stops.</span></h2>
                 <p>Laad je fietsroute in en ontdek de beste cafés en bakkerijen onderweg</p>
               </div>
 

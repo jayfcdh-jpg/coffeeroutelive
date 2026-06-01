@@ -353,6 +353,7 @@ export default function App() {
     try {
       const athleteId = await fetchAthleteId(token)
       const data = await fetchRoutes(token, athleteId)
+      console.log('Strava routes:', JSON.stringify(data.slice(0,1)))
       setStravaRoutes(data)
     } catch (e) {
       setStravaError(e.message)

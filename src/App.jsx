@@ -470,9 +470,15 @@ export default function App() {
         .app { min-height: 100vh; background: #f7f5f2; color: #1c1917; font-family: 'Inter', sans-serif; padding-bottom: 80px; }
 
         .header { padding: 18px 40px; background: #fff; border-bottom: 1px solid #e8e4df; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .header-centered { justify-content: center; }
+        .header-centered .logo { position: absolute; left: 50%; transform: none; }
         .logo { width: 38px; height: 38px; background: linear-gradient(135deg, #e85d2e, #f5974a); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,93,46,0.3); }
         .header h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; }
         .header p { font-size: 0.74rem; color: #a8a099; margin-top: 1px; font-weight: 500; }
+        .header-upload { justify-content: center; flex-direction: column; padding: 28px 40px 24px; border-bottom: none; background: transparent; position: relative; box-shadow: none; }
+        .header-upload .logo { width: 52px; height: 52px; font-size: 24px; margin-bottom: 10px; box-shadow: 0 4px 16px rgba(232,93,46,0.35); }
+        .header-upload h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; text-align: center; }
+        .header-upload p { font-size: 0.88rem; text-align: center; margin-top: 4px; }
         .back-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; }
         .back-btn:hover { background: #ede9e4; color: #1c1917; }
         .settings-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; background: #f7f5f2; border: 1px solid #e8e4df; border-radius: 8px; font-size: 0.78rem; font-weight: 600; color: #78716c; cursor: pointer; transition: all 0.15s; margin-left: auto; }
@@ -636,19 +642,25 @@ export default function App() {
       `}</style>
 
       <div className="app">
-        <header className="header">
-          <div className="logo">☕</div>
-          <div>
+        {screen === "upload" ? (
+          <header className="header header-upload">
+            <div className="logo">☕</div>
             <h1>Café.</h1>
             <p>Vind koffiestops langs jouw fietsroute</p>
-          </div>
-          {screen === "results" && (
+          </header>
+        ) : (
+          <header className="header">
+            <div className="logo">☕</div>
+            <div>
+              <h1>Café.</h1>
+              <p>Vind koffiestops langs jouw fietsroute</p>
+            </div>
             <button className="back-btn" onClick={() => { setScreen("upload"); setStatus("idle"); setRoutePoints(null); setCafes([]); }}>
               ← Nieuwe route
             </button>
-          )}
-          {screen === "results" && <button className="settings-btn" style={{marginLeft:'8px'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>}
-        </header>
+            <button className="settings-btn" style={{marginLeft:'8px'}} onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
+          </header>
+        )}
 
         {showSettings && (
           <>

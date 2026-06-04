@@ -262,8 +262,11 @@ function StopCard({ stop, speed, departureTime, onFavChange }) {
           </button>
           <span className="cafe-name">{stop.name}</span>
           <span className="cafe-type">{stop.type}</span>
-          {openNow === true && <span className="open-badge open">Open om {arrivalStr}</span>}
-          {openNow === false && <span className="open-badge closed">Gesloten om {arrivalStr}</span>}
+          {stop.opening_hours && (
+            <span className={`open-badge ${openNow === true ? 'open' : openNow === false ? 'closed' : ''}`}>
+              {stop.opening_hours}
+            </span>
+          )}
         </div>
         <div className="cafe-sub">{stop.distKm} km · {fmtTime(parseFloat(stop.distKm), speed)} · {stop.routePct}% van route</div>
 
@@ -518,8 +521,8 @@ export default function App() {
         }
       }
 
-      setCafes(nearStops);
-      setAllCafes(allStops);
+      setCafes(nearStops.sort((a, b) => a.frac - b.frac));
+      setAllCafes(allStops.sort((a, b) => a.frac - b.frac));
       setStatus("done");
       setScreen("results");
     } catch (e) {
@@ -688,9 +691,10 @@ export default function App() {
         .dist-unit { font-size: 0.6rem; color: #c4bdb5; font-weight: 600; display: block; }
         .chevron { font-size: 0.52rem; color: #d6d0c9; margin-top: 6px; }
 
-        .open-badge { font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+        .open-badge { font-size: 0.62rem; padding: 2px 7px; border-radius: 6px; font-weight: 600; letter-spacing: 0; text-transform: none; }
         .open-badge.open { background: #f0faf0; color: #2d8f26; border: 1px solid #b8e8b5; }
         .open-badge.closed { background: #fff8f7; color: #c0392b; border: 1px solid #fbd5cc; }
+        .open-badge:not(.open):not(.closed) { background: #f5f2ef; color: #a8a099; border: 1px solid #e8e4df; }
         .fav-btn { background: #f5f2ef; border: 1px solid #e8e4df; border-radius: 7px; cursor: pointer; font-size: 0.95rem; line-height: 1; padding: 4px 6px; flex-shrink: 0; transition: all 0.15s; }
         .fav-btn:hover { background: #ede9e4; transform: scale(1.05); }
         .fav-btn.active { background: #fff0eb; border-color: #fbd5cc; }
@@ -1046,18 +1050,26 @@ export default function App() {
             }
             return true;
           });
-          const picked = [];
+          // Auto picks (gesorteerd op positie)
+          const autoPicked = [];
           const seen = new Set();
           for (let i = 0; i < numStops; i++) {
             const targetFrac = (stopPositions[i] ?? (((i + 1) / (numStops + 1)) * 100)) / 100;
             const candidates = pool.filter(c => !seen.has(c.id)).sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
-            if (candidates.length > 0) { picked.push(candidates[0]); seen.add(candidates[0].id); }
+            if (candidates.length > 0) { autoPicked.push(candidates[0]); seen.add(candidates[0].id); }
+            else { autoPicked.push(null); } // placeholder zodat index klopt
           }
-          // Voeg handmatig gepinde stops toe
-          pool.filter(c => pinnedStopIds.has(c.id) && !seen.has(c.id))
-            .sort((a, b) => a.frac - b.frac)
-            .forEach(c => { picked.push({ ...c, pinned: true }); seen.add(c.id); });
-          picked.sort((a, b) => a.frac - b.frac);
+          // Handmatig gepinde stops
+          const pinnedPicked = allCafes
+            .filter(c => pinnedStopIds.has(c.id) && !seen.has(c.id))
+            .map(c => ({ ...c, pinned: true }));
+
+          // Gecombineerd en gesorteerd
+          const picked = [
+            ...autoPicked.filter(Boolean),
+            ...pinnedPicked
+          ].sort((a, b) => a.frac - b.frac);
+
           pickedRef.current = picked;
 
           return (
@@ -1122,7 +1134,7 @@ export default function App() {
                 {Array.from({ length: numStops }, (_, i) => {
                   const pct = stopPositions[i] ?? Math.round(((i + 1) / (numStops + 1)) * 100);
                   const km = ((pct / 100) * dist).toFixed(1);
-                  const autoMatch = picked.filter(p => !p.pinned)[i];
+                  const autoMatch = autoPicked[i];
                   const editing = showStopEditor === i;
                   return (
                     <div key={i} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>

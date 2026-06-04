@@ -393,6 +393,7 @@ export default function App() {
   const [shareUrl, setShareUrl] = useState('');
   const [sharing, setSharing] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showFavPanel, setShowFavPanel] = useState(false);
   const [stravaToken, setStravaToken] = useState(() => getStoredToken());
   const [stravaRoutes, setStravaRoutes] = useState([]);
   const [stravaSearch, setStravaSearch] = useState('');
@@ -738,8 +739,47 @@ export default function App() {
               <h1 style={{fontSize:'1.3rem',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,display:'inline-block',borderBottom:'2px solid rgba(232,93,46,0.35)',paddingBottom:'0'}}>Café.</h1>
               <p style={{fontSize:'0.72rem',color:'#c4bdb5',fontWeight:500,marginTop:'0px'}}>Koffiestops langs jouw fietsroute</p>
             </div>
+            <button className="settings-btn" onClick={() => setShowFavPanel(true)} style={{marginRight:'4px'}}>
+              ❤️ {favourites.length > 0 && <span style={{background:'#e85d2e',color:'#fff',borderRadius:'10px',padding:'0 5px',fontSize:'0.65rem',fontWeight:700}}>{favourites.length}</span>}
+            </button>
             <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
           </header>
+        )}
+
+        {showFavPanel && (
+          <>
+            <div className="settings-overlay" onClick={() => setShowFavPanel(false)} />
+            <div className="settings-panel">
+              <div className="settings-title">
+                Favorieten
+                <span className="settings-close" onClick={() => setShowFavPanel(false)}>✕</span>
+              </div>
+              {favourites.length === 0 ? (
+                <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.82rem',padding:'24px 0'}}>
+                  Nog geen favorieten — tik ❤️ op een stop om hem op te slaan
+                </div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+                  {favourites.map(f => (
+                    <div key={f.id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'11px 13px',background:'#faf8f6',borderRadius:'10px',border:'1px solid #f0ece8'}}>
+                      <span style={{fontSize:'1rem'}}>{f.type === 'bakkerij' ? '🥐' : '☕'}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:'0.84rem',fontWeight:700,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{f.name}</div>
+                        <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{f.city || f.type}</div>
+                      </div>
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(f.name + (f.city ? ' ' + f.city : ''))}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{fontSize:'0.7rem',color:'#e85d2e',fontWeight:600,textDecoration:'none',flexShrink:0}}>
+                        Maps →
+                      </a>
+                      <button onClick={() => { toggleFavourite(f); setFavourites(getFavourites()); }}
+                        style={{background:'none',border:'none',cursor:'pointer',fontSize:'0.9rem',opacity:0.5,flexShrink:0}}>🗑️</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {showSettings && (

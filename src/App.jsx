@@ -394,6 +394,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
   const [pinnedStopIds, setPinnedStopIds] = useState(new Set());
+  const [excludedAutoIds, setExcludedAutoIds] = useState(new Set());
   const [uploadTab, setUploadTab] = useState('strava');
   const [favourites, setFavourites] = useState(() => getFavourites());
   const [shareUrl, setShareUrl] = useState('');
@@ -1056,7 +1057,7 @@ export default function App() {
           const seen = new Set();
           for (let i = 0; i < numStops; i++) {
             const targetFrac = (stopPositions[i] ?? (((i + 1) / (numStops + 1)) * 100)) / 100;
-            const candidates = pool.filter(c => !seen.has(c.id)).sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
+            const candidates = pool.filter(c => !seen.has(c.id) && !excludedAutoIds.has(c.id)).sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
             if (candidates.length > 0) { autoPicked.push(candidates[0]); seen.add(candidates[0].id); }
             else { autoPicked.push(null); } // placeholder zodat index klopt
           }
@@ -1133,36 +1134,59 @@ export default function App() {
 
                 {/* Alle stops gesorteerd op routevolgorde */}
                 {picked.map((c, idx) => {
+                  const editing = showStopEditor === c.id;
                   if (c.pinned) {
+                    const pinnedPct = Math.round(c.frac * 100);
                     return (
-                      <div key={c.id} style={{marginBottom:'6px',background:'#fff5f2',borderRadius:'10px',padding:'10px 12px',border:'1px solid #fbd5cc',display:'flex',alignItems:'center',gap:'8px'}}>
-                        <div className="stop-dot" style={{background:'#fff0eb',borderColor:'#fbd5cc'}}>{idx + 1}</div>
-                        <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
-                        <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{c.distKm} km · {fmtTime(parseFloat(c.distKm), speed)}</span>
-                        <button onClick={() => setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); return next; })}
-                          style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#fbd5cc',color:'#c0392b',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
-                          ✕
-                        </button>
+                      <div key={c.id} style={{marginBottom:'6px',background:'#fff5f2',borderRadius:'10px',padding:'10px 12px',border:'1px solid #fbd5cc'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+                          <div className="stop-dot" style={{background:'#fff0eb',borderColor:'#fbd5cc'}}>{idx + 1}</div>
+                          <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
+                          <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{c.distKm} km · {fmtTime(parseFloat(c.distKm), speed)}</span>
+                          <button style={{padding:'2px 8px',border:'none',borderRadius:'6px',background: editing ? '#e85d2e' : '#ede9e4',color: editing ? '#fff' : '#78716c',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}
+                            onClick={() => setShowStopEditor(editing ? false : c.id)}>
+                            {editing ? 'Klaar' : '✏️'}
+                          </button>
+                          <button onClick={() => setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); return next; })}
+                            style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#fbd5cc',color:'#c0392b',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
+                            ✕
+                          </button>
+                        </div>
+                        {editing && (
+                          <div style={{marginTop:'8px',paddingLeft:'30px'}}>
+                            <input type="range" min="5" max="95" step="1" defaultValue={pinnedPct} style={{width:'100%',accentColor:'#e85d2e'}}
+                              onChange={e => {
+                                const newFrac = parseInt(e.target.value) / 100;
+                                const nearest = allCafes.filter(x => !pinnedStopIds.has(x.id) || x.id === c.id)
+                                  .sort((a, b) => Math.abs(a.frac - newFrac) - Math.abs(b.frac - newFrac))[0];
+                                if (nearest && nearest.id !== c.id) {
+                                  setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); next.add(nearest.id); return next; });
+                                }
+                              }} />
+                            <div style={{fontSize:'0.7rem',color:'#e85d2e',fontWeight:700,textAlign:'right',marginTop:'1px'}}>
+                              {c.distKm} km · {fmtTime(parseFloat(c.distKm), speed)}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   }
                   const autoIdx = autoPicked.indexOf(c);
                   const pct = stopPositions[autoIdx] ?? Math.round(((autoIdx + 1) / (numStops + 1)) * 100);
                   const km = ((pct / 100) * dist).toFixed(1);
-                  const editing = showStopEditor === autoIdx;
                   return (
                     <div key={c.id} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                         <div className="stop-dot">{idx + 1}</div>
-                        <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                          {c.name}
-                        </span>
-                        <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>
-                          {km} km · {fmtTime(parseFloat(km), speed)}
-                        </span>
+                        <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
+                        <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{km} km · {fmtTime(parseFloat(km), speed)}</span>
                         <button style={{padding:'2px 8px',border:'none',borderRadius:'6px',background: editing ? '#e85d2e' : '#ede9e4',color: editing ? '#fff' : '#78716c',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}
-                          onClick={() => setShowStopEditor(editing ? false : autoIdx)}>
+                          onClick={() => setShowStopEditor(editing ? false : c.id)}>
                           {editing ? 'Klaar' : '✏️'}
+                        </button>
+                        <button onClick={() => setExcludedAutoIds(prev => { const next = new Set(prev); next.add(c.id); return next; })}
+                          style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#ede9e4',color:'#78716c',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
+                          ✕
                         </button>
                       </div>
                       {editing && (

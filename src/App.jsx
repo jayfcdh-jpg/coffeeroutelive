@@ -522,7 +522,7 @@ export default function App() {
       }
 
       setCafes(nearStops.sort((a, b) => a.frac - b.frac));
-      setAllCafes(allStops.sort((a, b) => a.frac - b.frac));
+      setAllCafes(allStops.filter(c => c.snapDist < 1.0).sort((a, b) => a.frac - b.frac));
       setStatus("done");
       setScreen("results");
     } catch (e) {

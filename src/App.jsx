@@ -256,6 +256,10 @@ function StopCard({ stop, speed, departureTime, onFavChange }) {
       <div className="cafe-num">{typeIcon}</div>
       <div className="cafe-body">
         <div className="cafe-top">
+          <button className={`fav-btn${fav ? ' active' : ''}`}
+            onClick={e => { e.stopPropagation(); const v = toggleFavourite(stop); setFav(v); onFavChange?.(); }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={fav ? '#e85d2e' : 'none'} stroke={fav ? '#e85d2e' : '#a8a099'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
           <span className="cafe-name">{stop.name}</span>
           <span className="cafe-type">{stop.type}</span>
           {openNow === true && <span className="open-badge open">Open om {arrivalStr}</span>}
@@ -297,10 +301,6 @@ function StopCard({ stop, speed, departureTime, onFavChange }) {
       <div className="cafe-right">
         <div className="dist-km">{stop.distKm}</div>
         <span className="dist-unit">km</span>
-        <button className={`fav-btn${fav ? ' active' : ''}`}
-          onClick={e => { e.stopPropagation(); const v = toggleFavourite(stop); setFav(v); onFavChange?.(); }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill={fav ? '#e85d2e' : 'none'} stroke={fav ? '#e85d2e' : '#a8a099'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        </button>
         <div className="chevron">{open ? '▲' : '▼'}</div>
       </div>
     </div>

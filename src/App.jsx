@@ -231,7 +231,7 @@ function RouteMap({ routePoints, stops }) {
 }
 
 // ─── Stop Card ────────────────────────────────────────────────────────────────
-function StopCard({ stop, speed, departureTime, onFavChange }) {
+function StopCard({ stop, speed, departureTime, onFavChange, extraAction }) {
   const [open, setOpen] = useState(false);
   const [fav, setFav] = useState(() => isFavourite(stop.id));
   const typeIcon = stop.type === 'bakkerij' ? '🥐' : '☕';
@@ -304,6 +304,7 @@ function StopCard({ stop, speed, departureTime, onFavChange }) {
       <div className="cafe-right">
         <div className="dist-km">{stop.distKm}</div>
         <span className="dist-unit">km</span>
+        {extraAction}
         <div className="chevron">{open ? '▲' : '▼'}</div>
       </div>
     </div>
@@ -1217,22 +1218,18 @@ export default function App() {
                 {(showAllStops ? allCafes : picked).length === 0
                   ? <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.84rem',padding:'24px 0'}}>Geen stops gevonden</div>
                   : (showAllStops ? allCafes : picked).map(c => (
-                    <div key={c.id} style={{position:'relative'}}>
-                      <StopCard stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())} />
-                      {showAllStops && (
-                        <button
-                          onClick={() => setPinnedStopIds(prev => {
-                            const next = new Set(prev);
-                            if (next.has(c.id)) { next.delete(c.id); } else { next.add(c.id); }
-                            return next;
-                          })}
-                          style={{position:'absolute',top:'10px',right:'10px',padding:'3px 10px',border:'none',borderRadius:'7px',fontSize:'0.7rem',fontWeight:700,cursor:'pointer',background: pinnedStopIds.has(c.id) ? '#e85d2e' : '#ede9e4',color: pinnedStopIds.has(c.id) ? '#fff' : '#78716c',zIndex:1}}>
-                          {pinnedStopIds.has(c.id) ? '✓ Toegevoegd' : '+ Toevoegen'}
-                        </button>
-                      )}
-                      {!showAllStops && c.pinned && (
-                        <span style={{position:'absolute',top:'10px',right:'10px',padding:'2px 8px',background:'#f5f2ef',borderRadius:'6px',fontSize:'0.62rem',fontWeight:700,color:'#a8a099'}}>Handmatig</span>
-                      )}
+                    <div key={c.id}>
+                      <StopCard stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())}
+                        extraAction={showAllStops ? (
+                          <button
+                            onClick={e => { e.stopPropagation(); setPinnedStopIds(prev => { const next = new Set(prev); if (next.has(c.id)) { next.delete(c.id); } else { next.add(c.id); } return next; }); }}
+                            style={{padding:'3px 10px',border:'none',borderRadius:'7px',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0,background: pinnedStopIds.has(c.id) ? '#e85d2e' : '#ede9e4',color: pinnedStopIds.has(c.id) ? '#fff' : '#78716c'}}>
+                            {pinnedStopIds.has(c.id) ? '✓' : '+'}
+                          </button>
+                        ) : c.pinned ? (
+                          <span style={{padding:'2px 8px',background:'#f5f2ef',borderRadius:'6px',fontSize:'0.62rem',fontWeight:700,color:'#a8a099',flexShrink:0}}>Handmatig</span>
+                        ) : null}
+                      />
                     </div>
                   ))}
               </div>

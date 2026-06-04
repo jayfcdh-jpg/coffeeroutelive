@@ -1131,24 +1131,37 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Auto stops */}
-                {Array.from({ length: numStops }, (_, i) => {
-                  const pct = stopPositions[i] ?? Math.round(((i + 1) / (numStops + 1)) * 100);
+                {/* Alle stops gesorteerd op routevolgorde */}
+                {picked.map((c, idx) => {
+                  if (c.pinned) {
+                    return (
+                      <div key={c.id} style={{marginBottom:'6px',background:'#fff5f2',borderRadius:'10px',padding:'10px 12px',border:'1px solid #fbd5cc',display:'flex',alignItems:'center',gap:'8px'}}>
+                        <div className="stop-dot" style={{background:'#fff0eb',borderColor:'#fbd5cc'}}>{idx + 1}</div>
+                        <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
+                        <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{c.distKm} km · {fmtTime(parseFloat(c.distKm), speed)}</span>
+                        <button onClick={() => setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); return next; })}
+                          style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#fbd5cc',color:'#c0392b',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  }
+                  const autoIdx = autoPicked.indexOf(c);
+                  const pct = stopPositions[autoIdx] ?? Math.round(((autoIdx + 1) / (numStops + 1)) * 100);
                   const km = ((pct / 100) * dist).toFixed(1);
-                  const autoMatch = autoPicked[i];
-                  const editing = showStopEditor === i;
+                  const editing = showStopEditor === autoIdx;
                   return (
-                    <div key={i} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>
+                    <div key={c.id} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                        <div className="stop-dot">{i + 1}</div>
+                        <div className="stop-dot">{idx + 1}</div>
                         <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                          {autoMatch ? autoMatch.name : <span style={{color:'#c4bdb5',fontWeight:500}}>Geen stop gevonden</span>}
+                          {c.name}
                         </span>
                         <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>
                           {km} km · {fmtTime(parseFloat(km), speed)}
                         </span>
                         <button style={{padding:'2px 8px',border:'none',borderRadius:'6px',background: editing ? '#e85d2e' : '#ede9e4',color: editing ? '#fff' : '#78716c',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}
-                          onClick={() => setShowStopEditor(editing ? false : i)}>
+                          onClick={() => setShowStopEditor(editing ? false : autoIdx)}>
                           {editing ? 'Klaar' : '✏️'}
                         </button>
                       </div>
@@ -1157,7 +1170,7 @@ export default function App() {
                           <input type="range" min="5" max="95" step="1" value={pct} style={{width:'100%',accentColor:'#e85d2e'}}
                             onChange={e => {
                               const next = [...stopPositions];
-                              next[i] = parseInt(e.target.value);
+                              next[autoIdx] = parseInt(e.target.value);
                               setStopPositions(next);
                             }} />
                           <div style={{fontSize:'0.7rem',color:'#e85d2e',fontWeight:700,textAlign:'right',marginTop:'1px'}}>
@@ -1168,19 +1181,6 @@ export default function App() {
                     </div>
                   );
                 })}
-
-                {/* Handmatig toegevoegde stops */}
-                {picked.filter(p => p.pinned).map((c, i) => (
-                  <div key={c.id} style={{marginBottom:'6px',background:'#fff5f2',borderRadius:'10px',padding:'10px 12px',border:'1px solid #fbd5cc',display:'flex',alignItems:'center',gap:'8px'}}>
-                    <div className="stop-dot" style={{background:'#fff0eb',borderColor:'#fbd5cc'}}>{numStops + i + 1}</div>
-                    <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
-                    <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{c.distKm} km</span>
-                    <button onClick={() => setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); return next; })}
-                      style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#fbd5cc',color:'#c0392b',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
-                      ✕
-                    </button>
-                  </div>
-                ))}
 
                 {/* Alle stops toggle */}
                 <button onClick={() => setShowAllStops(v => !v)}

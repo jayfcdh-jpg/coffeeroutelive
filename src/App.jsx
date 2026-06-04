@@ -270,6 +270,39 @@ function StopCard({ stop, speed, departureTime }) {
   );
 }
 
+// ─── GPX Export ───────────────────────────────────────────────────────────────
+function exportGPX(routePoints, stops) {
+  const wpts = stops.map(s => `  <wpt lat="${s.lat}" lon="${s.lon}">
+    <name>${s.name.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</name>
+    <desc>${s.type} · ${s.distKm} km</desc>
+    <sym>Cafe</sym>
+  </wpt>`).join('\n')
+
+  const trkpts = routePoints.map(p =>
+    `      <trkpt lat="${p.lat}" lon="${p.lon}"></trkpt>`
+  ).join('\n')
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Café. App" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>CoffeeRoute</name></metadata>
+${wpts}
+  <trk>
+    <name>Mijn route</name>
+    <trkseg>
+${trkpts}
+    </trkseg>
+  </trk>
+</gpx>`
+
+  const blob = new Blob([gpx], { type: 'application/gpx+xml' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'coffeeroute.gpx'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── Tijd helper ──────────────────────────────────────────────────────────────
 function fmtTime(km, speed) {
   const mins = Math.round((km / speed) * 60);
@@ -937,8 +970,14 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="section-title">
-                {showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}
+              <div className="section-title" style={{justifyContent:'space-between'}}>
+                <span>{showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}</span>
+                {!showAllStops && picked.length > 0 && (
+                  <button onClick={() => exportGPX(routePoints, picked)}
+                    style={{fontSize:'0.7rem',fontWeight:700,color:'#e85d2e',background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px',textTransform:'none',letterSpacing:0}}>
+                    ↓ Download GPX
+                  </button>
+                )}
               </div>
               <div className="cafe-list">
                 {(showAllStops ? pool : picked).length === 0

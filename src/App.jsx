@@ -373,6 +373,7 @@ export default function App() {
   const [routeInfo, setRouteInfo] = useState(null);
   const [routePoints, setRoutePoints] = useState(null);
   const [cafes, setCafes] = useState([]);
+  const [allCafes, setAllCafes] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
@@ -490,14 +491,17 @@ export default function App() {
         });
         const frac = snapIdx / Math.max(sampled.length - 1, 1);
         return { ...cafe, snapDist: minDist, snapIdx, frac };
-      }).filter(c => c.snapDist < 0.25);
+      });
 
-      // Sla alle cafés op voor later gebruik bij sliders
+      // Alle stops (voor "bekijk alle stops" overzicht)
       const allStops = withSnap.map(c => ({
         ...c,
         routePct: Math.round(c.frac * 100),
         distKm: (c.frac * dist).toFixed(1),
       }));
+
+      // Gefilterde stops (binnen 250m) voor auto-selectie
+      const nearStops = allStops.filter(c => c.snapDist < 0.25);
 
       // Kies per gewenste positie de dichtstbijzijnde stop
       const currentPositions = stopPositions.slice(0, numStops);
@@ -505,7 +509,7 @@ export default function App() {
       const seen = new Set();
       for (const pct of currentPositions) {
         const targetFrac = pct / 100;
-        const candidates = allStops
+        const candidates = nearStops
           .filter(c => !seen.has(c.id))
           .sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
         if (candidates.length > 0) {
@@ -513,9 +517,9 @@ export default function App() {
           seen.add(candidates[0].id);
         }
       }
-      const stops = picked;
 
-      setCafes(allStops); // sla alle stops op
+      setCafes(nearStops);
+      setAllCafes(allStops);
       setStatus("done");
       setScreen("results");
     } catch (e) {
@@ -1168,13 +1172,13 @@ export default function App() {
                 {/* Alle stops toggle */}
                 <button onClick={() => setShowAllStops(v => !v)}
                   style={{marginTop:'8px',width:'100%',padding:'7px',border:'1px dashed #e8e4df',borderRadius:'8px',background:'transparent',fontSize:'0.72rem',fontWeight:600,color:'#a8a099',cursor:'pointer'}}>
-                  {showAllStops ? '← Terug naar selectie' : `Bekijk alle ${pool.length} stops langs de route →`}
+                  {showAllStops ? '← Terug naar selectie' : `Bekijk alle ${allCafes.length} stops langs de route →`}
                 </button>
               </div>
 
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'20px 0 8px'}}>
                 <span style={{fontSize:'0.68rem',fontWeight:700,color:'#b8b0a8',textTransform:'uppercase',letterSpacing:'0.1em'}}>
-                  {showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}
+                  {showAllStops ? `Alle stops (${allCafes.length})` : `Jouw stops (${picked.length})`}
                 </span>
                 {!showAllStops && picked.length > 0 && (
                   <div style={{display:'flex',gap:'6px'}}>
@@ -1198,9 +1202,9 @@ export default function App() {
                 )}
               </div>
               <div className="cafe-list">
-                {(showAllStops ? pool : picked).length === 0
+                {(showAllStops ? allCafes : picked).length === 0
                   ? <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.84rem',padding:'24px 0'}}>Geen stops gevonden</div>
-                  : (showAllStops ? pool : picked).map(c => (
+                  : (showAllStops ? allCafes : picked).map(c => (
                     <div key={c.id} style={{position:'relative'}}>
                       <StopCard stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())} />
                       {showAllStops && (

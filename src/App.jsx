@@ -525,6 +525,10 @@ export default function App() {
 
       setCafes(nearStops.sort((a, b) => a.frac - b.frac));
       setAllCafes(allStops.filter(c => c.snapDist < 1.0).sort((a, b) => a.frac - b.frac));
+      setExcludedAutoIds(new Set());
+      setPinnedStopIds(new Set());
+      setNumStops(3);
+      setStopPositions([25, 50, 75]);
       setStatus("done");
       setScreen("results");
     } catch (e) {
@@ -1036,37 +1040,33 @@ export default function App() {
         {screen === "results" && routeInfo && (() => {
           const dist = parseFloat(routeInfo.distKm);
 
-          // Kies per gewenste positie de dichtstbijzijnde stop van het juiste type
           const [depH, depM] = departureTime.split(':').map(Number);
+
+          // Pool: filter op type en afstand (NIET op openingstijden — die tonen we als badge)
           const pool = cafes.filter(c => {
             if (filterType !== "all" && c.type !== filterType) return false;
             if (c.snapDist > maxDist) return false;
-            // Check of stop open is bij aankomst
-            if (c.opening_hours) {
-              const arrival = new Date();
-              arrival.setHours(depH, depM, 0, 0);
-              const travelMins = Math.round((parseFloat(c.distKm) / speed) * 60);
-              arrival.setMinutes(arrival.getMinutes() + travelMins);
-              const openStatus = isOpenAt(c.opening_hours, arrival);
-              if (openStatus === false) return false;
-            }
             return true;
           });
-          // Auto picks (gesorteerd op positie)
+
+          // Auto picks: numStops evenly distributed stops
           const autoPicked = [];
           const seen = new Set();
           for (let i = 0; i < numStops; i++) {
             const targetFrac = (stopPositions[i] ?? (((i + 1) / (numStops + 1)) * 100)) / 100;
-            const candidates = pool.filter(c => !seen.has(c.id) && !excludedAutoIds.has(c.id)).sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
+            const candidates = pool
+              .filter(c => !seen.has(c.id) && !excludedAutoIds.has(c.id))
+              .sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
             if (candidates.length > 0) { autoPicked.push(candidates[0]); seen.add(candidates[0].id); }
-            else { autoPicked.push(null); } // placeholder zodat index klopt
+            else { autoPicked.push(null); }
           }
-          // Handmatig gepinde stops
+
+          // Handmatig gepinde stops (extra, bovenop auto)
           const pinnedPicked = allCafes
             .filter(c => pinnedStopIds.has(c.id) && !seen.has(c.id))
             .map(c => ({ ...c, pinned: true }));
 
-          // Gecombineerd en gesorteerd
+          // Gecombineerd gesorteerd voor kaart en lijst
           const picked = [
             ...autoPicked.filter(Boolean),
             ...pinnedPicked
@@ -1111,12 +1111,14 @@ export default function App() {
                       const n = numStops - 1;
                       setNumStops(n);
                       setStopPositions(Array.from({length: n}, (_, i) => Math.round(((i + 1) / (n + 1)) * 100)));
+                      setExcludedAutoIds(new Set());
                     }}>−</button>
                     <span className="num-val">{numStops}</span>
                     <button className="num-btn" disabled={numStops >= 5} onClick={() => {
                       const n = numStops + 1;
                       setNumStops(n);
                       setStopPositions(Array.from({length: n}, (_, i) => Math.round(((i + 1) / (n + 1)) * 100)));
+                      setExcludedAutoIds(new Set());
                     }}>+</button>
                   </div>
                   <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:'6px'}}>

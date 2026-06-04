@@ -9,7 +9,7 @@ function getFavourites() {
 function toggleFavourite(stop) {
   const favs = getFavourites()
   const idx = favs.findIndex(f => f.id === stop.id)
-  if (idx === -1) favs.push(stop) else favs.splice(idx, 1)
+  if (idx === -1) { favs.push(stop) } else { favs.splice(idx, 1) }
   localStorage.setItem('cafe_favourites', JSON.stringify(favs))
   return idx === -1
 }

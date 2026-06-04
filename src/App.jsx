@@ -552,7 +552,7 @@ export default function App() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #f5f2ef; }
-        .app { min-height: 100vh; background: #f5f2ef; color: #1c1917; font-family: 'Inter', sans-serif; padding-bottom: 80px; }
+        .app { min-height: 100vh; min-height: 100dvh; background: #f5f2ef; color: #1c1917; font-family: 'Inter', sans-serif; padding-bottom: env(safe-area-inset-bottom, 80px); }
 
         .header { padding: 14px 20px; background: #f5f2ef; border-bottom: none; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; }
         .logo { width: 36px; height: 36px; background: linear-gradient(135deg, #e85d2e, #f5974a); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(232,93,46,0.25); }
@@ -718,9 +718,49 @@ export default function App() {
         .dist-filter span { font-size: 0.72rem; font-weight: 700; color: #e85d2e; min-width: 36px; }
 
         @media (max-width: 580px) {
-          .header { padding: 14px 16px; }
-          .main { padding: 18px 14px 0; }
-          .stats { grid-template-columns: repeat(2, 1fr); }
+          /* Header */
+          .header { padding: 10px 14px; }
+          .header-upload { padding: 20px 16px 14px; }
+          .header-upload h1 { font-size: 1.5rem; }
+          .back-btn { padding: 5px 9px; font-size: 0.7rem; }
+          .settings-btn { padding: 5px 9px; font-size: 0.7rem; }
+
+          /* Upload scherm */
+          .upload-screen { padding: 12px; align-items: flex-start; padding-top: 16px; }
+          .upload-card { max-width: 100%; }
+          .upload-box { padding: 14px; border-radius: 16px; }
+          .upload-tab { font-size: 0.76rem; padding: 7px 6px; }
+          .dropzone { padding: 24px 16px; }
+          .strava-connected { padding: 12px; }
+
+          /* Resultaten */
+          .main { padding: 12px 12px 0; }
+          .stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+          .stat { padding: 9px 10px; }
+          .stat-value { font-size: 1.1rem; }
+          .stat input[type=time] { font-size: 1.1rem; }
+
+          /* Kaart kleiner op mobiel */
+          .map-wrap > div { height: 240px !important; }
+
+          /* Stop planner */
+          .stop-planner { padding: 11px 12px; }
+          .num-btn { width: 26px; height: 26px; }
+
+          /* Filters op mobiel */
+          .filter-group { gap: 3px; }
+          .filter-btn { padding: 4px 8px; font-size: 0.68rem; }
+
+          /* Kaartjes */
+          .cafe-card { padding: 11px 12px; gap: 0 9px; }
+          .cafe-name { font-size: 0.84rem; }
+          .cafe-num { width: 28px; height: 28px; font-size: 0.85rem; }
+
+          /* Settings paneel fullscreen op mobiel */
+          .settings-panel { width: 100%; }
+
+          /* Section title knoppen */
+          .section-title { font-size: 0.62rem; }
         }
       `}</style>
 

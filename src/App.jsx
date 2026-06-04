@@ -377,7 +377,7 @@ export default function App() {
   const [dragOver, setDragOver] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
   const [filterType, setFilterType] = useState("all");
-  const [maxDist, setMaxDist] = useState(1.5);
+  const [maxDist, setMaxDist] = useState(0.25);
   const [numStops, setNumStops] = useState(3);
   const [stopPositions, setStopPositions] = useState([25, 50, 75]);
   const [showAllStops, setShowAllStops] = useState(false);
@@ -489,7 +489,7 @@ export default function App() {
         });
         const frac = snapIdx / Math.max(sampled.length - 1, 1);
         return { ...cafe, snapDist: minDist, snapIdx, frac };
-      }).filter(c => c.snapDist < 1.5);
+      }).filter(c => c.snapDist < 0.25);
 
       // Sla alle cafés op voor later gebruik bij sliders
       const allStops = withSnap.map(c => ({
@@ -1102,8 +1102,8 @@ export default function App() {
                       ))}
                     </div>
                     <div style={{display:'flex',alignItems:'center',gap:'5px'}}>
-                      <input type="range" min="0.2" max="2" step="0.1" value={maxDist} onChange={e => setMaxDist(parseFloat(e.target.value))} style={{width:'60px',accentColor:'#e85d2e'}} />
-                      <span style={{fontSize:'0.68rem',fontWeight:700,color:'#e85d2e',whiteSpace:'nowrap'}}>{maxDist < 1 ? `${Math.round(maxDist*1000)}m` : `${maxDist.toFixed(1)}km`}</span>
+                      <input type="range" min="0.1" max="1" step="0.05" value={maxDist} onChange={e => setMaxDist(parseFloat(e.target.value))} style={{width:'60px',accentColor:'#e85d2e'}} />
+                      <span style={{fontSize:'0.68rem',fontWeight:700,color:'#e85d2e',whiteSpace:'nowrap'}}>{Math.round(maxDist*1000)}m</span>
                     </div>
                   </div>
                 </div>

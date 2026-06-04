@@ -388,6 +388,7 @@ export default function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
+  const [pinnedStopIds, setPinnedStopIds] = useState(new Set());
   const [uploadTab, setUploadTab] = useState('strava');
   const [favourites, setFavourites] = useState(() => getFavourites());
   const [shareUrl, setShareUrl] = useState('');
@@ -1048,6 +1049,11 @@ export default function App() {
             const candidates = pool.filter(c => !seen.has(c.id)).sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
             if (candidates.length > 0) { picked.push(candidates[0]); seen.add(candidates[0].id); }
           }
+          // Voeg handmatig gepinde stops toe
+          pool.filter(c => pinnedStopIds.has(c.id) && !seen.has(c.id))
+            .sort((a, b) => a.frac - b.frac)
+            .forEach(c => { picked.push({ ...c, pinned: true }); seen.add(c.id); });
+          picked.sort((a, b) => a.frac - b.frac);
           pickedRef.current = picked;
 
           return (
@@ -1181,7 +1187,25 @@ export default function App() {
               <div className="cafe-list">
                 {(showAllStops ? pool : picked).length === 0
                   ? <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.84rem',padding:'24px 0'}}>Geen stops gevonden</div>
-                  : (showAllStops ? pool : picked).map(c => <StopCard key={c.id} stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())} />)}
+                  : (showAllStops ? pool : picked).map(c => (
+                    <div key={c.id} style={{position:'relative'}}>
+                      <StopCard stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())} />
+                      {showAllStops && (
+                        <button
+                          onClick={() => setPinnedStopIds(prev => {
+                            const next = new Set(prev);
+                            if (next.has(c.id)) { next.delete(c.id); } else { next.add(c.id); }
+                            return next;
+                          })}
+                          style={{position:'absolute',top:'10px',right:'10px',padding:'3px 10px',border:'none',borderRadius:'7px',fontSize:'0.7rem',fontWeight:700,cursor:'pointer',background: pinnedStopIds.has(c.id) ? '#e85d2e' : '#ede9e4',color: pinnedStopIds.has(c.id) ? '#fff' : '#78716c',zIndex:1}}>
+                          {pinnedStopIds.has(c.id) ? '✓ Toegevoegd' : '+ Toevoegen'}
+                        </button>
+                      )}
+                      {!showAllStops && c.pinned && (
+                        <span style={{position:'absolute',top:'10px',right:'10px',padding:'2px 8px',background:'#f5f2ef',borderRadius:'6px',fontSize:'0.62rem',fontWeight:700,color:'#a8a099'}}>Handmatig</span>
+                      )}
+                    </div>
+                  ))}
               </div>
             </main>
           );

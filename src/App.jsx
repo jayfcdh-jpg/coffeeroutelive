@@ -2,6 +2,38 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "./supabase.js";
 import { stravaAuthUrl, exchangeCode, fetchRouteStream, fetchRoutes, fetchAthleteId, getStoredToken, storeToken, clearToken } from "./strava.js";
 
+// ─── Favorieten helpers ───────────────────────────────────────────────────────
+function getFavourites() {
+  try { return JSON.parse(localStorage.getItem('cafe_favourites') || '[]') } catch { return [] }
+}
+function toggleFavourite(stop) {
+  const favs = getFavourites()
+  const idx = favs.findIndex(f => f.id === stop.id)
+  if (idx === -1) favs.push(stop) else favs.splice(idx, 1)
+  localStorage.setItem('cafe_favourites', JSON.stringify(favs))
+  return idx === -1
+}
+function isFavourite(id) { return getFavourites().some(f => f.id === id) }
+
+// ─── Deel route helpers ───────────────────────────────────────────────────────
+function randomId() { return Math.random().toString(36).slice(2, 9) }
+
+async function saveSharedRoute(routePoints, stopIds, stopPositions) {
+  const id = randomId()
+  const thin = routePoints.filter((_, i) => i % 3 === 0) // reduceer punten
+  const { error } = await supabase.from('shared_routes').insert({
+    id, route_points: thin, stop_ids: stopIds, stop_positions: stopPositions
+  })
+  if (error) throw new Error('Opslaan mislukt')
+  return id
+}
+
+async function loadSharedRoute(id) {
+  const { data, error } = await supabase.from('shared_routes').select('*').eq('id', id).single()
+  if (error || !data) throw new Error('Route niet gevonden')
+  return data
+}
+
 // ─── GPX parser ───────────────────────────────────────────────────────────────
 function parseGPX(gpxText) {
   const parser = new DOMParser();
@@ -199,8 +231,9 @@ function RouteMap({ routePoints, stops }) {
 }
 
 // ─── Stop Card ────────────────────────────────────────────────────────────────
-function StopCard({ stop, speed, departureTime }) {
+function StopCard({ stop, speed, departureTime, onFavChange }) {
   const [open, setOpen] = useState(false);
+  const [fav, setFav] = useState(() => isFavourite(stop.id));
   const typeIcon = stop.type === 'bakkerij' ? '🥐' : '☕';
   const mapsQuery = [stop.name, stop.address, stop.city].filter(Boolean).join(', ');
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`;
@@ -264,6 +297,10 @@ function StopCard({ stop, speed, departureTime }) {
       <div className="cafe-right">
         <div className="dist-km">{stop.distKm}</div>
         <span className="dist-unit">km</span>
+        <button className={`fav-btn${fav ? ' active' : ''}`}
+          onClick={e => { e.stopPropagation(); const v = toggleFavourite(stop); setFav(v); onFavChange?.(); }}>
+          {fav ? '❤️' : '🤍'}
+        </button>
         <div className="chevron">{open ? '▲' : '▼'}</div>
       </div>
     </div>
@@ -351,7 +388,11 @@ export default function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
-  const [uploadTab, setUploadTab] = useState('strava'); // 'strava' | 'bestand'
+  const [uploadTab, setUploadTab] = useState(() => getFavourites().length > 0 ? 'favorieten' : 'strava');
+  const [favourites, setFavourites] = useState(() => getFavourites());
+  const [shareUrl, setShareUrl] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [stravaToken, setStravaToken] = useState(() => getStoredToken());
   const [stravaRoutes, setStravaRoutes] = useState([]);
   const [stravaSearch, setStravaSearch] = useState('');
@@ -361,17 +402,27 @@ export default function App() {
   const pickedRef = useRef([]);
   const fileRef = useRef();
 
-  // Strava OAuth callback afhandelen
+  // Strava OAuth callback + gedeelde route laden
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')
+    const shareId = params.get('share')
+
     if (code) {
       window.history.replaceState({}, '', window.location.pathname)
       exchangeCode(code).then(data => {
         storeToken(data)
         setStravaToken(data)
-        loadStravaActivities(data.access_token)
       }).catch(() => setStravaError('Strava login mislukt, probeer opnieuw'))
+    }
+
+    if (shareId) {
+      window.history.replaceState({}, '', window.location.pathname)
+      loadSharedRoute(shareId).then(data => {
+        setStopPositions(data.stop_positions)
+        setNumStops(data.stop_positions.length)
+        handleFilePoints(data.route_points)
+      }).catch(() => setErrorMsg('Gedeelde route niet gevonden'))
     }
   }, [])
 
@@ -634,6 +685,12 @@ export default function App() {
         .open-badge { font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
         .open-badge.open { background: #f0faf0; color: #2d8f26; border: 1px solid #b8e8b5; }
         .open-badge.closed { background: #fff8f7; color: #c0392b; border: 1px solid #fbd5cc; }
+        .fav-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0; flex-shrink: 0; opacity: 0.4; transition: all 0.15s; }
+        .fav-btn:hover { opacity: 1; transform: scale(1.2); }
+        .fav-btn.active { opacity: 1; }
+        .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 16px; padding: 24px; width: min(400px,90vw); box-shadow: 0 8px 40px rgba(0,0,0,0.15); z-index: 200; }
+        .share-input { width: 100%; padding: 10px 12px; border: 1px solid #ede9e4; border-radius: 8px; font-size: 0.8rem; color: #1c1917; font-family: inherit; margin: 12px 0; background: #faf8f6; }
+        .share-copy-btn { width: 100%; padding: 10px; background: #e85d2e; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: 0.84rem; cursor: pointer; }
 
         .stop-planner { background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 14px 15px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
         .stop-planner-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
@@ -713,6 +770,23 @@ export default function App() {
         )}
 
 
+        {showShareModal && (
+          <>
+            <div className="settings-overlay" onClick={() => setShowShareModal(false)} />
+            <div className="share-modal">
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
+                <span style={{fontWeight:800,fontSize:'0.95rem',color:'#1c1917'}}>Route delen</span>
+                <span style={{cursor:'pointer',color:'#a8a099',fontSize:'1.1rem'}} onClick={() => setShowShareModal(false)}>✕</span>
+              </div>
+              <p style={{fontSize:'0.78rem',color:'#a8a099',marginBottom:'4px'}}>Stuur deze link naar een vriend:</p>
+              <input className="share-input" readOnly value={shareUrl} onClick={e => e.target.select()} />
+              <button className="share-copy-btn" onClick={() => { navigator.clipboard.writeText(shareUrl); setShowShareModal(false); }}>
+                Kopieer link
+              </button>
+            </div>
+          </>
+        )}
+
         {screen === "upload" && (
           <div className="upload-screen">
             <div className="upload-card">
@@ -725,11 +799,14 @@ export default function App() {
               <div className="upload-box">
               <div className="upload-tabs">
                 <button className={`upload-tab${uploadTab === 'strava' ? ' active' : ''}`} onClick={() => setUploadTab('strava')}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill={uploadTab === 'strava' ? '#fc4c02' : '#a8a099'}><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill={uploadTab === 'strava' ? '#fc4c02' : '#a8a099'}><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
                   Strava
                 </button>
                 <button className={`upload-tab${uploadTab === 'bestand' ? ' active' : ''}`} onClick={() => setUploadTab('bestand')}>
                   📂 Bestand
+                </button>
+                <button className={`upload-tab${uploadTab === 'favorieten' ? ' active' : ''}`} onClick={() => setUploadTab('favorieten')}>
+                  ❤️ {favourites.length > 0 ? favourites.length : ''}
                 </button>
               </div>
 
@@ -817,6 +894,30 @@ export default function App() {
                     Upload een <strong>.gpx</strong> of <strong>.fit</strong> bestand van jouw fietsroute.
                   </div>
                 </>
+              )}
+
+              {uploadTab === 'favorieten' && (
+                <div>
+                  {favourites.length === 0 ? (
+                    <div style={{textAlign:'center',padding:'24px 0',color:'#a8a099',fontSize:'0.82rem'}}>
+                      Nog geen favorieten — tik ❤️ op een stop om hem op te slaan
+                    </div>
+                  ) : (
+                    <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+                      {favourites.map(f => (
+                        <div key={f.id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 12px',background:'#faf8f6',borderRadius:'10px',border:'1px solid #f0ece8'}}>
+                          <span style={{fontSize:'1rem'}}>{f.type === 'bakkerij' ? '🥐' : '☕'}</span>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:'0.84rem',fontWeight:700,color:'#1c1917',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{f.name}</div>
+                            <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{f.city || f.type}</div>
+                          </div>
+                          <button onClick={() => { toggleFavourite(f); setFavourites(getFavourites()); }}
+                            style={{background:'none',border:'none',cursor:'pointer',fontSize:'1rem',opacity:0.6}}>🗑️</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               )}
 
               {status === "error" && <div className="error-box">⚠️ {errorMsg}</div>}
@@ -975,18 +1076,30 @@ export default function App() {
                   {showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}
                 </span>
                 {!showAllStops && picked.length > 0 && (
-                  <button onClick={() => exportGPX(routePoints, picked)}
-                    style={{display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 14px',background:'#e85d2e',color:'#fff',border:'none',borderRadius:'8px',fontWeight:700,fontSize:'0.75rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(232,93,46,0.25)',transition:'all 0.15s'}}
-                    onMouseEnter={e => e.currentTarget.style.background='#d44e21'}
-                    onMouseLeave={e => e.currentTarget.style.background='#e85d2e'}>
-                    ↓ Download GPX
-                  </button>
+                  <div style={{display:'flex',gap:'6px'}}>
+                    <button onClick={async () => {
+                      setSharing(true)
+                      try {
+                        const id = await saveSharedRoute(routePoints, picked.map(p => p.id), stopPositions)
+                        const url = `${window.location.origin}${window.location.pathname}?share=${id}`
+                        setShareUrl(url)
+                        setShowShareModal(true)
+                      } catch(e) { alert('Delen mislukt') }
+                      finally { setSharing(false) }
+                    }} style={{display:'inline-flex',alignItems:'center',gap:'5px',padding:'6px 12px',background:'#f5f2ef',color:'#78716c',border:'1px solid #ede9e4',borderRadius:'8px',fontWeight:700,fontSize:'0.75rem',cursor:'pointer'}}>
+                      {sharing ? '...' : '🔗 Delen'}
+                    </button>
+                    <button onClick={() => exportGPX(routePoints, picked)}
+                      style={{display:'inline-flex',alignItems:'center',gap:'5px',padding:'6px 12px',background:'#e85d2e',color:'#fff',border:'none',borderRadius:'8px',fontWeight:700,fontSize:'0.75rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(232,93,46,0.25)'}}>
+                      ↓ GPX
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="cafe-list">
                 {(showAllStops ? pool : picked).length === 0
                   ? <div style={{textAlign:'center',color:'#a8a099',fontSize:'0.84rem',padding:'24px 0'}}>Geen stops gevonden</div>
-                  : (showAllStops ? pool : picked).map(c => <StopCard key={c.id} stop={c} speed={speed} departureTime={departureTime} />)}
+                  : (showAllStops ? pool : picked).map(c => <StopCard key={c.id} stop={c} speed={speed} departureTime={departureTime} onFavChange={() => setFavourites(getFavourites())} />)}
               </div>
             </main>
           );

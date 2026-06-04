@@ -970,11 +970,15 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="section-title" style={{justifyContent:'space-between'}}>
-                <span>{showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}</span>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',margin:'20px 0 8px'}}>
+                <span style={{fontSize:'0.68rem',fontWeight:700,color:'#b8b0a8',textTransform:'uppercase',letterSpacing:'0.1em'}}>
+                  {showAllStops ? `Alle stops (${pool.length})` : `Jouw stops (${picked.length})`}
+                </span>
                 {!showAllStops && picked.length > 0 && (
                   <button onClick={() => exportGPX(routePoints, picked)}
-                    style={{fontSize:'0.7rem',fontWeight:700,color:'#e85d2e',background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:'4px',textTransform:'none',letterSpacing:0}}>
+                    style={{display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 14px',background:'#e85d2e',color:'#fff',border:'none',borderRadius:'8px',fontWeight:700,fontSize:'0.75rem',cursor:'pointer',boxShadow:'0 2px 8px rgba(232,93,46,0.25)',transition:'all 0.15s'}}
+                    onMouseEnter={e => e.currentTarget.style.background='#d44e21'}
+                    onMouseLeave={e => e.currentTarget.style.background='#e85d2e'}>
                     ↓ Download GPX
                   </button>
                 )}

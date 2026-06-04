@@ -1114,18 +1114,18 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Stop lijst */}
+                {/* Auto stops */}
                 {Array.from({ length: numStops }, (_, i) => {
                   const pct = stopPositions[i] ?? Math.round(((i + 1) / (numStops + 1)) * 100);
                   const km = ((pct / 100) * dist).toFixed(1);
-                  const match = picked[i];
+                  const autoMatch = picked.filter(p => !p.pinned)[i];
                   const editing = showStopEditor === i;
                   return (
                     <div key={i} style={{marginBottom:'6px',background:'#faf8f6',borderRadius:'10px',padding:'10px 12px',border:'1px solid #f0ece8'}}>
                       <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
                         <div className="stop-dot">{i + 1}</div>
                         <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                          {match ? match.name : <span style={{color:'#c4bdb5',fontWeight:500}}>Geen stop gevonden</span>}
+                          {autoMatch ? autoMatch.name : <span style={{color:'#c4bdb5',fontWeight:500}}>Geen stop gevonden</span>}
                         </span>
                         <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>
                           {km} km · {fmtTime(parseFloat(km), speed)}
@@ -1151,6 +1151,19 @@ export default function App() {
                     </div>
                   );
                 })}
+
+                {/* Handmatig toegevoegde stops */}
+                {picked.filter(p => p.pinned).map((c, i) => (
+                  <div key={c.id} style={{marginBottom:'6px',background:'#fff5f2',borderRadius:'10px',padding:'10px 12px',border:'1px solid #fbd5cc',display:'flex',alignItems:'center',gap:'8px'}}>
+                    <div className="stop-dot" style={{background:'#fff0eb',borderColor:'#fbd5cc'}}>{numStops + i + 1}</div>
+                    <span style={{fontSize:'0.85rem',fontWeight:700,color:'#1c1917',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
+                    <span style={{fontSize:'0.7rem',color:'#a8a099',whiteSpace:'nowrap'}}>{c.distKm} km</span>
+                    <button onClick={() => setPinnedStopIds(prev => { const next = new Set(prev); next.delete(c.id); return next; })}
+                      style={{padding:'2px 8px',border:'none',borderRadius:'6px',background:'#fbd5cc',color:'#c0392b',fontSize:'0.68rem',fontWeight:700,cursor:'pointer',flexShrink:0}}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
 
                 {/* Alle stops toggle */}
                 <button onClick={() => setShowAllStops(v => !v)}

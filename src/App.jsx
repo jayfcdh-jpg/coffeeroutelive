@@ -388,7 +388,7 @@ export default function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showStopEditor, setShowStopEditor] = useState(false);
-  const [uploadTab, setUploadTab] = useState(() => getFavourites().length > 0 ? 'favorieten' : 'strava');
+  const [uploadTab, setUploadTab] = useState('strava');
   const [favourites, setFavourites] = useState(() => getFavourites());
   const [shareUrl, setShareUrl] = useState('');
   const [sharing, setSharing] = useState(false);
@@ -685,9 +685,9 @@ export default function App() {
         .open-badge { font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
         .open-badge.open { background: #f0faf0; color: #2d8f26; border: 1px solid #b8e8b5; }
         .open-badge.closed { background: #fff8f7; color: #c0392b; border: 1px solid #fbd5cc; }
-        .fav-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0; flex-shrink: 0; opacity: 0.4; transition: all 0.15s; }
-        .fav-btn:hover { opacity: 1; transform: scale(1.2); }
-        .fav-btn.active { opacity: 1; }
+        .fav-btn { background: #f5f2ef; border: 1px solid #e8e4df; border-radius: 7px; cursor: pointer; font-size: 0.95rem; line-height: 1; padding: 4px 6px; flex-shrink: 0; transition: all 0.15s; }
+        .fav-btn:hover { background: #ede9e4; transform: scale(1.05); }
+        .fav-btn.active { background: #fff0eb; border-color: #fbd5cc; }
         .share-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: #fff; border-radius: 16px; padding: 24px; width: min(400px,90vw); box-shadow: 0 8px 40px rgba(0,0,0,0.15); z-index: 200; }
         .share-input { width: 100%; padding: 10px 12px; border: 1px solid #ede9e4; border-radius: 8px; font-size: 0.8rem; color: #1c1917; font-family: inherit; margin: 12px 0; background: #faf8f6; }
         .share-copy-btn { width: 100%; padding: 10px; background: #e85d2e; color: #fff; border: none; border-radius: 9px; font-weight: 700; font-size: 0.84rem; cursor: pointer; }
@@ -804,9 +804,6 @@ export default function App() {
                 </button>
                 <button className={`upload-tab${uploadTab === 'bestand' ? ' active' : ''}`} onClick={() => setUploadTab('bestand')}>
                   📂 Bestand
-                </button>
-                <button className={`upload-tab${uploadTab === 'favorieten' ? ' active' : ''}`} onClick={() => setUploadTab('favorieten')}>
-                  ❤️ {favourites.length > 0 ? favourites.length : ''}
                 </button>
               </div>
 

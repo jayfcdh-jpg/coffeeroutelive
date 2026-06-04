@@ -299,7 +299,7 @@ function StopCard({ stop, speed, departureTime, onFavChange }) {
         <span className="dist-unit">km</span>
         <button className={`fav-btn${fav ? ' active' : ''}`}
           onClick={e => { e.stopPropagation(); const v = toggleFavourite(stop); setFav(v); onFavChange?.(); }}>
-          {fav ? '❤️' : '🤍'}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill={fav ? '#e85d2e' : 'none'} stroke={fav ? '#e85d2e' : '#a8a099'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
         <div className="chevron">{open ? '▲' : '▼'}</div>
       </div>
@@ -739,8 +739,9 @@ export default function App() {
               <h1 style={{fontSize:'1.3rem',fontWeight:800,letterSpacing:'-0.04em',lineHeight:1,display:'inline-block',borderBottom:'2px solid rgba(232,93,46,0.35)',paddingBottom:'0'}}>Café.</h1>
               <p style={{fontSize:'0.72rem',color:'#c4bdb5',fontWeight:500,marginTop:'0px'}}>Koffiestops langs jouw fietsroute</p>
             </div>
-            <button className="settings-btn" onClick={() => setShowFavPanel(true)} style={{marginRight:'4px'}}>
-              ❤️ {favourites.length > 0 && <span style={{background:'#e85d2e',color:'#fff',borderRadius:'10px',padding:'0 5px',fontSize:'0.65rem',fontWeight:700}}>{favourites.length}</span>}
+            <button className="settings-btn" onClick={() => setShowFavPanel(true)} style={{marginRight:'4px',position:'relative'}}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill={favourites.length > 0 ? '#e85d2e' : 'none'} stroke={favourites.length > 0 ? '#e85d2e' : '#78716c'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              {favourites.length > 0 && <span style={{position:'absolute',top:'-4px',right:'-4px',background:'#e85d2e',color:'#fff',borderRadius:'10px',padding:'0 4px',fontSize:'0.6rem',fontWeight:700,lineHeight:'14px'}}>{favourites.length}</span>}
             </button>
             <button className="settings-btn" onClick={() => setShowSettings(true)}>⚙️ Instellingen</button>
           </header>
@@ -773,7 +774,9 @@ export default function App() {
                         Maps →
                       </a>
                       <button onClick={() => { toggleFavourite(f); setFavourites(getFavourites()); }}
-                        style={{background:'none',border:'none',cursor:'pointer',fontSize:'0.9rem',opacity:0.5,flexShrink:0}}>🗑️</button>
+                        style={{background:'none',border:'none',cursor:'pointer',flexShrink:0,opacity:0.4,padding:'2px'}}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1c1917" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -949,7 +952,9 @@ export default function App() {
                             <div style={{fontSize:'0.7rem',color:'#a8a099'}}>{f.city || f.type}</div>
                           </div>
                           <button onClick={() => { toggleFavourite(f); setFavourites(getFavourites()); }}
-                            style={{background:'none',border:'none',cursor:'pointer',fontSize:'1rem',opacity:0.6}}>🗑️</button>
+                            style={{background:'none',border:'none',cursor:'pointer',opacity:0.4,padding:'2px',flexShrink:0}}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1c1917" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                          </button>
                         </div>
                       ))}
                     </div>

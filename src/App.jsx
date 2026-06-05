@@ -1042,22 +1042,25 @@ export default function App() {
 
           const [depH, depM] = departureTime.split(':').map(Number);
 
-          // Pool: filter op type en afstand (NIET op openingstijden — die tonen we als badge)
+          // Pool: stops binnen maxDist (NIET op openingstijden — die tonen we als badge)
           const pool = cafes.filter(c => {
             if (filterType !== "all" && c.type !== filterType) return false;
             if (c.snapDist > maxDist) return false;
             return true;
           });
+          // Bredere pool als terugval zodat elke positie een stop krijgt
+          const widePool = allCafes.filter(c => filterType === "all" || c.type === filterType);
 
           // Auto picks: numStops evenly distributed stops
           const autoPicked = [];
           const seen = new Set();
           for (let i = 0; i < numStops; i++) {
             const targetFrac = (stopPositions[i] ?? (((i + 1) / (numStops + 1)) * 100)) / 100;
-            const candidates = pool
+            const pickFrom = (list) => list
               .filter(c => !seen.has(c.id) && !excludedAutoIds.has(c.id))
-              .sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac));
-            if (candidates.length > 0) { autoPicked.push(candidates[0]); seen.add(candidates[0].id); }
+              .sort((a, b) => Math.abs(a.frac - targetFrac) - Math.abs(b.frac - targetFrac))[0];
+            const match = pickFrom(pool) || pickFrom(widePool);
+            if (match) { autoPicked.push(match); seen.add(match.id); }
             else { autoPicked.push(null); }
           }
 

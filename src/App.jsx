@@ -527,8 +527,9 @@ export default function App() {
       setAllCafes(allStops.filter(c => c.snapDist < 1.0).sort((a, b) => a.frac - b.frac));
       setExcludedAutoIds(new Set());
       setPinnedStopIds(new Set());
-      setNumStops(3);
-      setStopPositions([25, 50, 75]);
+      const autoStops = Math.max(1, Math.round(dist / 50));
+      setNumStops(autoStops);
+      setStopPositions(Array.from({ length: autoStops }, (_, i) => Math.round(((i + 1) / (autoStops + 1)) * 100)));
       setStatus("done");
       setScreen("results");
     } catch (e) {
@@ -1117,7 +1118,7 @@ export default function App() {
                       setExcludedAutoIds(new Set());
                     }}>−</button>
                     <span className="num-val">{numStops}</span>
-                    <button className="num-btn" disabled={numStops >= 5} onClick={() => {
+                    <button className="num-btn" disabled={numStops >= 10} onClick={() => {
                       const n = numStops + 1;
                       setNumStops(n);
                       setStopPositions(Array.from({length: n}, (_, i) => Math.round(((i + 1) / (n + 1)) * 100)));
